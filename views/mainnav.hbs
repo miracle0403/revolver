@@ -1,0 +1,45 @@
+<header>
+
+      <nav class="navbar navbar-expand-md navbar-light fixed-top bg-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#about">About Us</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" href="/faq">FAQ</a>
+            </li>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" href="/howitworks">Compensation Plan</a>
+            </li>
+            {{#if isAuthenticated}}
+            <li class="nav-item">
+              <a class="nav-link disabled" href="/logout">Log Out</a>
+                </li>
+                  <li class="nav-item">
+              <a class="nav-link disabled" href="/dashboard">Dashboard</a>
+                 <li class="nav-item">
+              <a class="nav-link disabled" href="/profile">Profile</a>
+                </li>
+                   <li class="nav-item">
+              <a class="nav-link disabled" href="/referrals">Referrals</a>
+              </li>
+                	{{else}}
+                	<li class="nav-item">
+              <a class="nav-link disabled" href="/register">Register</a>
+                </li>
+                <li class="nav-item">
+              <a class="nav-link disabled" href="/login">Log In</a>
+                </li>
+                			{{/if}}
+          </ul>
+        </div>
+      </nav>
+    </header>
