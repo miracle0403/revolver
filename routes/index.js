@@ -30,7 +30,7 @@ var pool  = mysql.createPool({
   host: "localhost",
   user: "root",
   //password: 'Akahlineglobal',
-  database: "new"
+  database: "revolver"
 });
 
 //
@@ -46,7 +46,7 @@ router.get('/', function(req, res, next) {
 
 });
 
-// get join
+// get how it works
 router.get('/howitworks',  function (req, res, next){
 
 //console.log( req.route.path )
@@ -352,419 +352,34 @@ router.get('/logout', function(req, res, next) {
   res.redirect('/');
 });
 
-//get dashboard''
+//get dashboard
 router.get('/dashboard', authentificationMiddleware(), function(req, res, next) {
-	pinset( );
-  var db = require('../db.js');
-  var currentUser = req.session.passport.user.user_id;
-  admini( currentUser )
-  db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function ( err, results, fields ){
-  	if( err ) throw err;
-  	var username = results[0].username; 
- 	//check if the user has updated his profile
-	db.query( 'SELECT user FROM profile WHERE user = ?', [username], function ( err, results, fields ){
+	var db = require('../db.js');
+	var currentUser = req.session.passport.user.user_id;
+	admini( currentUser );
+	db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function ( err, results, fields ){
 		if( err ) throw err;
-  		if( results.length === 0 ){
-  			var error = 'Please update your profile to see your stats.';
-  			res.render( 'dashboard', {title: 'DASHBOARD', error: error});
-  		}
-		else{
-		//check the transaction
-		db.query( 'SELECT balance FROM transactions WHERE user = ?', [username], function ( err, results, fields ){
-				if( err ) throw err;
-				if (results.length === 0){
-					var balance = 0;
-							db.query( 'SELECT feeder, stage1, stage2, stage3, stage4 FROM user_tree WHERE user = ?', [username], function ( err, results, fields ){
-				if( err ) throw err;
-				var stage = {
-  				feeder: results[0].feeder,
-  				stage1: results[0].stage1,
-  				stage2: results[0].stage2,
-  				stage3: results[0].stage3,
-  				stage4: results[0].stage4
-				}
-			//	console.log(stage);
-				db.query('SELECT node.user,(COUNT(parent.user) - (sub_tree.depth + 1)) AS depth FROM feeder AS node, feeder AS parent, feeder AS sub_parent, ( SELECT node.user, (COUNT(parent.user) - 1) AS depth FROM feeder AS node, feeder AS parent WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.user = ? GROUP BY node.user ORDER BY node.lft) AS sub_tree WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt AND sub_parent.user  =  sub_tree.user GROUP BY node.user HAVING depth = ? ORDER BY depth ', [username, 1], function(err, results, fields){
-					if (err) throw err;
-					//console.log('result is' + feeder)
-					var feeder = results;
-					//console.log(feeder );
-					db.query('SELECT node.user,(COUNT(parent.user) - (sub_tree.depth + 1)) AS depth FROM stage1 AS node, stage1 AS parent, stage1 AS sub_parent, ( SELECT node.user, (COUNT(parent.user) - 1) AS depth FROM stage1 AS node, stage1 AS parent WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.user = ? GROUP BY node.user ORDER BY node.lft) AS sub_tree WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt AND sub_parent.user  =  sub_tree.user GROUP BY node.user HAVING depth  < ? ORDER BY depth', [username, 3], function(err, results, fields){
-						if (err) throw err; 
-						var stage1 = results;
-						//console.log( stage1 );
-						db.query('SELECT node.user,(COUNT(parent.user) - (sub_tree.depth + 1)) AS depth FROM stage2 AS node, stage2 AS parent, stage2 AS sub_parent, ( SELECT node.user, (COUNT(parent.user) - 1) AS depth FROM stage2 AS node, stage2 AS parent WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.user = ? GROUP BY node.user ORDER BY node.lft) AS sub_tree WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt AND sub_parent.user  =  sub_tree.user GROUP BY node.user HAVING depth   = ? ORDER BY depth', [username, 4], function(err, results, fields){
-							if (err) throw err; 
-							var stage2 = results;
-							db.query('SELECT node.user,(COUNT(parent.user) - (sub_tree.depth + 1)) AS depth FROM stage3 AS node, stage3 AS parent, stage3 AS sub_parent, ( SELECT node.user, (COUNT(parent.user) - 1) AS depth FROM stage3 AS node, stage3 AS parent WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.user = ? GROUP BY node.user ORDER BY node.lft) AS sub_tree WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt AND sub_parent.user  =  sub_tree.user GROUP BY node.user HAVING depth   =  ? ORDER BY depth', [username, 1], function(err, results, fields){
-								if (err) throw err; 
-								var stage3 = results;
-								db.query('SELECT node.user,   (COUNT(parent.user) - (sub_tree.depth + 1)) AS depth FROM stage4 AS node, stage4 AS parent, stage4 AS sub_parent, ( SELECT node.user, (COUNT(parent.user) - 1) AS depth FROM stage4 AS node, stage4 AS parent WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.user = ? GROUP BY node.user ORDER BY node.lft) AS sub_tree WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt AND sub_parent.user  =  sub_tree.user GROUP BY node.user HAVING depth   =  ? ORDER BY depth', [username, 1], function(err, results, fields){
-									if (err) throw err; 
-									var stage4 = results;
-									db.query( 'SELECT user FROM admin WHERE user = ?', [currentUser], function ( err, results, fields ){
-										if(err) throw err;
-										if( results.length ===0 ){
-										db.query( 'SELECT * FROM earnings WHERE user = ?', [username], function ( err, results, fields ){
-										if(err) throw err;
-										if( results.length === 0 && stage.feeder !== null  && stage.stage1 === null ){
-											var earnings = {
-												feeder: 0,
-												stage1: 0,
-												stage2: 0,
-												stage3: 0,
-												stage4: 0,
-												powerbank: 0,
-												phone: 0,
-												laptop: 0,
-												leadership: 0,
-												empower: 0,
-												salary: 0,
-												car: 0
-											}
-											var cash = 0;
-											var gift = 0;
-											var total = cash + gift;
-											var error = 'You have not earned yet.'
-											var currentstage = 'Feeder Stage';
-											res.render( 'dashboard', {title: 'USER DASHBOARD', feedertree: feeder, error: error,  stage1tree: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, balance: balance, total: total, cash: cash, car: earnings.car, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-										}else{
-											
-											var earnings = {
-												feeder: results[0].feeder, 
-												stage1: results[0].stage1,
-												stage2: results[0].stage2,
-												stage3: results[0].stage3,
-												stage4: results[0].stage4,
-												powerbank: results[0].powerbank,
-												phone: results[0].phone,
-												laptop: results[0].laptop,
-												leadership: results[0].leadership,
-												empower: results[0].empower,
-												salary: results[0].salary,
-												car: results[0].car
-											}
-											//console.log('the earnings')
-											//console.log(results)
-											var gift = earnings.salary + earnings.powerbank + earnings.phone + earnings.car + earnings.laptop + earnings.empower + earnings.leadership;
-											var cash  = earnings.feeder + earnings.stage1 + earnings.stage2 + earnings.stage3 + earnings.stage4;
-											var total = cash + gift;
-											if( stage.feeder !== null  && stage.stage1 === null){
-												var currentstage = 'Feeder Stage';
-												console.log(currentstage); 
-												res.render( 'dashboard', {title: 'USER DASHBOARD', balance: balance, feedertree: feeder, stage1tree: stage1, stage2tree: stage2, stage3tree: stage3, stage4tree: stage4, gift: gift, total: total, cash: cash, car: earnings.car, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-	}									
-												if( stage.stage1 !== null  && stage.stage2 === null){
-													var currentstage = ' Stage One';
-													console.log(currentstage);
-													res.render( 'dashboard', {title: 'USER DASHBOARD', feedertree: feeder, balance: balance, stage1tree: stage1, stage2tree: stage2, stage3tree: stage3, stage4tree: stage4, gift: gift, total: total, cash: cash, car: earnings.car, salary: earnings.salary, empower: earnings.empower, balance: balance, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-										
-	}												if( stage.stage2 !==  null && stage.stage3 === null){
-														var currentstage = ' Stage Two';
-														console.log(currentstage);
-														res.render( 'dashboard', {title: 'USER DASHBOARD', feeder: feeder, stage1: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, total: total, cash: cash, car: earnings.car, balance: balance, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-}										
-														if( stage.stage3 !== null  && stage.stage4 === null){
-															var currentstage = ' Stage Three';
-															res.render( 'dashboard', {title: 'USER DASHBOARD', feeder: feeder, stage1: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, total: total, cash: cash, car: earnings.car, balance: balance, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-		}								
-															//console.log(currentstage);
-															if( stage.stage4 !== null){
-																var currentstage = ' Stage Four';
-																console.log(currentstage);
-																res.render( 'dashboard', {title: 'USER DASHBOARD', feeder: feeder, stage1: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, total: total, cash: cash, car: earnings.car, balance: balance, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-	}									
-																
-															
-										}
-									});
-										
-										}
-										else{
-											var admin = currentUser;
-											db.query( 'SELECT * FROM earnings WHERE user = ?', [username], function ( err, results, fields ){
-										if(err) throw err;
-										if( results.length === 0 && stage.feeder !== null  && stage.stage1 === null ){
-											var earnings = {
-												feeder: 0,
-												stage1: 0,
-												stage2: 0,
-												stage3: 0,
-												stage4: 0,
-												powerbank: 0,
-												phone: 0,
-												laptop: 0,
-												leadership: 0,
-												empower: 0,
-												salary: 0,
-												car: 0
-											}
-											var cash = 0;
-											var gift = 0;
-											var total = cash + gift;
-											var error = 'You have not earned yet.'
-											var currentstage = 'Feeder Stage';
-											res.render( 'dashboard', {title: 'USER DASHBOARD', feedertree: feeder, error: error,  stage1tree: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, balance: balance, total: total, cash: cash, car: earnings.car, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, admin: admin, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-										}else{
-											
-											var earnings = {
-												feeder: results[0].feeder, 
-												stage1: results[0].stage1,
-												stage2: results[0].stage2,
-												stage3: results[0].stage3,
-												stage4: results[0].stage4,
-												powerbank: results[0].powerbank,
-												phone: results[0].phone,
-												laptop: results[0].laptop,
-												leadership: results[0].leadership,
-												empower: results[0].empower,
-												salary: results[0].salary,
-												car: results[0].car
-											}
-											//console.log('the earnings')
-											//console.log(results)
-											var gift = earnings.salary + earnings.powerbank + earnings.phone + earnings.car + earnings.laptop + earnings.empower + earnings.leadership;
-											var cash  = earnings.feeder + earnings.stage1 + earnings.stage2 + earnings.stage3 + earnings.stage4;
-											var total = cash + gift;
-											if( stage.feeder !== null  && stage.stage1 === null){
-												var currentstage = 'Feeder Stage';
-												console.log(currentstage); 
-												res.render( 'dashboard', {title: 'USER DASHBOARD', balance: balance, admin: admin, feedertree: feeder, stage1tree: stage1, stage2tree: stage2, stage3tree: stage3, stage4tree: stage4, gift: gift, total: total, cash: cash, car: earnings.car, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-	}									
-												if( stage.stage1 !== null  && stage.stage2 === null){
-													var currentstage = ' Stage One';
-													console.log(currentstage);
-													res.render( 'dashboard', {title: 'USER DASHBOARD', feedertree: feeder, balance: balance, stage1tree: stage1, stage2tree: stage2, stage3tree: stage3, stage4tree: stage4, gift: gift, total: total, cash: cash, car: earnings.car, salary: earnings.salary, empower: earnings.empower, admin: admin, balance: balance, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-										
-	}												if( stage.stage2 !==  null && stage.stage3 === null){
-														var currentstage = ' Stage Two';
-														console.log(currentstage);
-														res.render( 'dashboard', {title: 'USER DASHBOARD', feeder: feeder, stage1: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, total: total, cash: cash, car: earnings.car, admin: admin, balance: balance, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-}										
-														if( stage.stage3 !== null  && stage.stage4 === null){
-															var currentstage = ' Stage Three';
-															res.render( 'dashboard', {title: 'USER DASHBOARD', feeder: feeder, stage1: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, total: total, cash: cash, car: earnings.car, admin: admin, balance: balance, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-		}								
-															//console.log(currentstage);
-															if( stage.stage4 !== null){
-																var currentstage = ' Stage Four';
-																console.log(currentstage);
-																res.render( 'dashboard', {title: 'USER DASHBOARD', feeder: feeder, stage1: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, total: total, cash: cash, car: earnings.car, admin: admin, balance: balance, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-	}									
-																
-															
-										} 
-									}); 
-										}
-									});
-								});
-							});
-						});
-					});
+		var username = results[0].username; 
+		//check if the user has updated his profile
+		db.query( 'SELECT user FROM profile WHERE user = ?', [username], function ( err, results, fields ){
+			if( err ) throw err;
+			if( results.length === 0 ){
+				var error = 'Please update your profile to see your stats.';
+				res.render( 'dashboard', {title: 'DASHBOARD', error: error});
+			}else{
+				//check if the person has a paid plan.
+				db.query( 'SELECT user FROM pin WHERE user = ?', [username], function ( err, results, fields ){
+					if( err ) throw err;
+					if (results.length === 0){
+						var message = 'You have not entered the matrix yet. Please enter the matrix';
+						res.render('dashboard', {title: 'DASHBOARD', message: message});
+					}
 				});
-			
-			});
-				}else{
-				var last = results.slice( -1 )[0];
-				var balance = last.balance;
-			//	console.log( balance )
-			db.query( 'SELECT feeder, stage1, stage2, stage3, stage4 FROM user_tree WHERE user = ?', [username], function ( err, results, fields ){
-				if( err ) throw err;
-				var stage = {
-  				feeder: results[0].feeder,
-  				stage1: results[0].stage1,
-  				stage2: results[0].stage2,
-  				stage3: results[0].stage3,
-  				stage4: results[0].stage4
-				}
-			//	console.log(stage);
-				db.query('SELECT node.user,(COUNT(parent.user) - (sub_tree.depth + 1)) AS depth FROM feeder AS node, feeder AS parent, feeder AS sub_parent, ( SELECT node.user, (COUNT(parent.user) - 1) AS depth FROM feeder AS node, feeder AS parent WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.user = ? GROUP BY node.user ORDER BY node.lft) AS sub_tree WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt AND sub_parent.user  =  sub_tree.user GROUP BY node.user HAVING depth = ? ORDER BY depth ', [username, 1], function(err, results, fields){
-					if (err) throw err;
-					//console.log('result is' + feeder)
-					var feeder = results;
-					//console.log(feeder );
-					db.query('SELECT node.user,(COUNT(parent.user) - (sub_tree.depth + 1)) AS depth FROM stage1 AS node, stage1 AS parent, stage1 AS sub_parent, ( SELECT node.user, (COUNT(parent.user) - 1) AS depth FROM stage1 AS node, stage1 AS parent WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.user = ? GROUP BY node.user ORDER BY node.lft) AS sub_tree WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt AND sub_parent.user  =  sub_tree.user GROUP BY node.user HAVING depth  < ? ORDER BY depth', [username, 3], function(err, results, fields){
-						if (err) throw err; 
-						var stage1 = results;
-						//console.log( stage1 );
-						db.query('SELECT node.user,(COUNT(parent.user) - (sub_tree.depth + 1)) AS depth FROM stage2 AS node, stage2 AS parent, stage2 AS sub_parent, ( SELECT node.user, (COUNT(parent.user) - 1) AS depth FROM stage2 AS node, stage2 AS parent WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.user = ? GROUP BY node.user ORDER BY node.lft) AS sub_tree WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt AND sub_parent.user  =  sub_tree.user GROUP BY node.user HAVING depth   = ? ORDER BY depth', [username, 4], function(err, results, fields){
-							if (err) throw err; 
-							var stage2 = results;
-							db.query('SELECT node.user,(COUNT(parent.user) - (sub_tree.depth + 1)) AS depth FROM stage3 AS node, stage3 AS parent, stage3 AS sub_parent, ( SELECT node.user, (COUNT(parent.user) - 1) AS depth FROM stage3 AS node, stage3 AS parent WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.user = ? GROUP BY node.user ORDER BY node.lft) AS sub_tree WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt AND sub_parent.user  =  sub_tree.user GROUP BY node.user HAVING depth   =  ? ORDER BY depth', [username, 1], function(err, results, fields){
-								if (err) throw err; 
-								var stage3 = results;
-								db.query('SELECT node.user,   (COUNT(parent.user) - (sub_tree.depth + 1)) AS depth FROM stage4 AS node, stage4 AS parent, stage4 AS sub_parent, ( SELECT node.user, (COUNT(parent.user) - 1) AS depth FROM stage4 AS node, stage4 AS parent WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.user = ? GROUP BY node.user ORDER BY node.lft) AS sub_tree WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt AND sub_parent.user  =  sub_tree.user GROUP BY node.user HAVING depth   =  ? ORDER BY depth', [username, 1], function(err, results, fields){
-									if (err) throw err; 
-									var stage4 = results;
-									db.query( 'SELECT user FROM admin WHERE user = ?', [currentUser], function ( err, results, fields ){
-										if(err) throw err;
-										if( results.length ===0 ){
-										db.query( 'SELECT * FROM earnings WHERE user = ?', [username], function ( err, results, fields ){
-										if(err) throw err;
-										if( results.length === 0 && stage.feeder !== null  && stage.stage1 === null ){
-											var earnings = {
-												feeder: 0,
-												stage1: 0,
-												stage2: 0,
-												stage3: 0,
-												stage4: 0,
-												powerbank: 0,
-												phone: 0,
-												laptop: 0,
-												leadership: 0,
-												empower: 0,
-												salary: 0,
-												car: 0
-											}
-											var cash = 0;
-											var gift = 0;
-											var total = cash + gift;
-											var error = 'You have not earned yet.'
-											var currentstage = 'Feeder Stage';
-											res.render( 'dashboard', {title: 'USER DASHBOARD', feedertree: feeder, error: error,  stage1tree: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, balance: balance, total: total, cash: cash, car: earnings.car, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-										}else{
-											
-											var earnings = {
-												feeder: results[0].feeder, 
-												stage1: results[0].stage1,
-												stage2: results[0].stage2,
-												stage3: results[0].stage3,
-												stage4: results[0].stage4,
-												powerbank: results[0].powerbank,
-												phone: results[0].phone,
-												laptop: results[0].laptop,
-												leadership: results[0].leadership,
-												empower: results[0].empower,
-												salary: results[0].salary,
-												car: results[0].car
-											}
-											//console.log('the earnings')
-											//console.log(results)
-											var gift = earnings.salary + earnings.powerbank + earnings.phone + earnings.car + earnings.laptop + earnings.empower + earnings.leadership;
-											var cash  = earnings.feeder + earnings.stage1 + earnings.stage2 + earnings.stage3 + earnings.stage4;
-											var total = cash + gift;
-											if( stage.feeder !== null  && stage.stage1 === null){
-												var currentstage = 'Feeder Stage';
-												console.log(currentstage); 
-												res.render( 'dashboard', {title: 'USER DASHBOARD', balance: balance, feedertree: feeder, stage1tree: stage1, stage2tree: stage2, stage3tree: stage3, stage4tree: stage4, gift: gift, total: total, cash: cash, car: earnings.car, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-	}									
-												if( stage.stage1 !== null  && stage.stage2 === null){
-													var currentstage = ' Stage One';
-													console.log(currentstage);
-													res.render( 'dashboard', {title: 'USER DASHBOARD', feedertree: feeder, balance: balance, stage1tree: stage1, stage2tree: stage2, stage3tree: stage3, stage4tree: stage4, gift: gift, total: total, cash: cash, car: earnings.car, salary: earnings.salary, empower: earnings.empower, balance: balance, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-										
-	}												if( stage.stage2 !==  null && stage.stage3 === null){
-														var currentstage = ' Stage Two';
-														console.log(currentstage);
-														res.render( 'dashboard', {title: 'USER DASHBOARD', feeder: feeder, stage1: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, total: total, cash: cash, car: earnings.car, balance: balance, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-}										
-														if( stage.stage3 !== null  && stage.stage4 === null){
-															var currentstage = ' Stage Three';
-															res.render( 'dashboard', {title: 'USER DASHBOARD', feeder: feeder, stage1: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, total: total, cash: cash, car: earnings.car, balance: balance, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-		}								
-															//console.log(currentstage);
-															if( stage.stage4 !== null){
-																var currentstage = ' Stage Four';
-																console.log(currentstage);
-																res.render( 'dashboard', {title: 'USER DASHBOARD', feeder: feeder, stage1: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, total: total, cash: cash, car: earnings.car, balance: balance, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-	}									
-																
-															
-										}
-									});
-										
-										}
-										else{
-											var admin = currentUser;
-											db.query( 'SELECT * FROM earnings WHERE user = ?', [username], function ( err, results, fields ){
-										if(err) throw err;
-										if( results.length === 0 && stage.feeder !== null  && stage.stage1 === null ){
-											var earnings = {
-												feeder: 0,
-												stage1: 0,
-												stage2: 0,
-												stage3: 0,
-												stage4: 0,
-												powerbank: 0,
-												phone: 0,
-												laptop: 0,
-												leadership: 0,
-												empower: 0,
-												salary: 0,
-												car: 0
-											}
-											var cash = 0;
-											var gift = 0;
-											var total = cash + gift;
-											var error = 'You have not earned yet.'
-											var currentstage = 'Feeder Stage';
-											res.render( 'dashboard', {title: 'USER DASHBOARD', feedertree: feeder, error: error,  stage1tree: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, balance: balance, total: total, cash: cash, car: earnings.car, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, admin: admin, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-										}else{
-											
-											var earnings = {
-												feeder: results[0].feeder, 
-												stage1: results[0].stage1,
-												stage2: results[0].stage2,
-												stage3: results[0].stage3,
-												stage4: results[0].stage4,
-												powerbank: results[0].powerbank,
-												phone: results[0].phone,
-												laptop: results[0].laptop,
-												leadership: results[0].leadership,
-												empower: results[0].empower,
-												salary: results[0].salary,
-												car: results[0].car
-											}
-											//console.log('the earnings')
-											//console.log(results)
-											var gift = earnings.salary + earnings.powerbank + earnings.phone + earnings.car + earnings.laptop + earnings.empower + earnings.leadership;
-											var cash  = earnings.feeder + earnings.stage1 + earnings.stage2 + earnings.stage3 + earnings.stage4;
-											var total = cash + gift;
-											if( stage.feeder !== null  && stage.stage1 === null){
-												var currentstage = 'Feeder Stage';
-												console.log(currentstage); 
-												res.render( 'dashboard', {title: 'USER DASHBOARD', balance: balance, admin: admin, feedertree: feeder, stage1tree: stage1, stage2tree: stage2, stage3tree: stage3, stage4tree: stage4, gift: gift, total: total, cash: cash, car: earnings.car, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-	}									
-												if( stage.stage1 !== null  && stage.stage2 === null){
-													var currentstage = ' Stage One';
-													console.log(currentstage);
-													res.render( 'dashboard', {title: 'USER DASHBOARD', feedertree: feeder, balance: balance, stage1tree: stage1, stage2tree: stage2, stage3tree: stage3, stage4tree: stage4, gift: gift, total: total, cash: cash, car: earnings.car, salary: earnings.salary, empower: earnings.empower, admin: admin, balance: balance, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-										
-	}												if( stage.stage2 !==  null && stage.stage3 === null){
-														var currentstage = ' Stage Two';
-														console.log(currentstage);
-														res.render( 'dashboard', {title: 'USER DASHBOARD', feeder: feeder, stage1: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, total: total, cash: cash, car: earnings.car, admin: admin, balance: balance, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-}										
-														if( stage.stage3 !== null  && stage.stage4 === null){
-															var currentstage = ' Stage Three';
-															res.render( 'dashboard', {title: 'USER DASHBOARD', feeder: feeder, stage1: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, total: total, cash: cash, car: earnings.car, admin: admin, balance: balance, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-		}								
-															//console.log(currentstage);
-															if( stage.stage4 !== null){
-																var currentstage = ' Stage Four';
-																console.log(currentstage);
-																res.render( 'dashboard', {title: 'USER DASHBOARD', feeder: feeder, stage1: stage1, stage2: stage2, stage3: stage3, stage4: stage4, gift: gift, total: total, cash: cash, car: earnings.car, admin: admin, balance: balance, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage: currentstage,  stage1: earnings.stage1, feeder: earnings.feeder });		
-	}									
-																
-															
-										}
-									});
-										}
-									});
-								});
-							});
-						});
-					});
-				});
-			
-			});
 			}
-		  }); 
-		}
-	});
-  });
+		});
+	});  
 });
-
+	
 router.post('/sendmail',  function (req, res, next){
 	var mail = req.body.mail;
 	var subject = req.body.subject;
@@ -950,7 +565,7 @@ passport.deserializeUser(function(user_id, done){
 
 //pinset( )
 //get function for pin and serial number
-function pinset(){
+/*function pinset(){
 var maiyl = require( '../nodemailer/pin.js' );
   var charSet = new securePin.CharSet(); 
   charSet.addLowerCaseAlpha().addUpperCaseAlpha().addNumeric().randomize();
@@ -974,7 +589,7 @@ var maiyl = require( '../nodemailer/pin.js' );
     });
   });
 }
-pinset(  )
+pinset(  )*/
 //authentication middleware snippet 
 function authentificationMiddleware(){
   return (req, res, next) => {
@@ -1229,8 +844,8 @@ router.post('/register', function (req, res, next) {
   req.checkBody('code', 'Country Code must not be empty.').notEmpty();
   req.checkBody('pass1', 'Password must match').equals(req.body.pass2);
   req.checkBody('phone', 'Phone Number must be ten characters').len(10);
-  req.checkBody('pin', 'Pin must be thirteen characters').len(13);
-  req.checkBody('serial', 'Serial must be ten characters').len(10);
+  //req.checkBody('pin', 'Pin must be thirteen characters').len(13);
+  //req.checkBody('serial', 'Serial must be ten characters').len(10);
   /*req.checkBody('pass1', 'Password must have upper case, lower case, symbol, and number').matches((?=,*\d)(?=, *[a-z])(?=, *[A-Z])(?!, [^a-zA-Z0-9]).{8,}$/, "i")*/
  
   var errors = req.validationErrors();
@@ -1246,8 +861,8 @@ router.post('/register', function (req, res, next) {
     var code = req.body.code;
     var phone = req.body.phone;
 	var sponsor = req.body.sponsor;
-	var pin = req.body.pin;
-	var serial = req.body.serial;
+	//var pin = req.body.pin;
+	//var serial = req.body.serial;
 
     var db = require('../db.js');
     //check if sponsor is valid
@@ -1271,49 +886,17 @@ router.post('/register', function (req, res, next) {
           			if(results.length===1){
           				var error = "Sorry, this username is taken";
             				console.log(error);
-            			}else{
-            				db.query('SELECT * FROM pin WHERE serial = ?', [serial], function(err, results, fields){
-          					if (err) throw err;
-          					if(results.length === 0){
-      								var error = 'serial does not exist';
-      								res.render('register', {error: error, username: username, email: email, phone: phone, password: password, cpass: cpass, fullname: fullname, code: code, pin: pin, serial: serial, sponsor: sponsor, title: 'REGISTRATION UNSUCCESSFUL!'})
-    							}else{
-    								const hash = results[0].pin;
-    								bcrypt.compare(pin, hash, function(err, response){
-    									if(response === false){
-          								var error = 'the pin does not exist';
-          								res.render('register', {title: 'REGISTRATION UNSUSSESSFUL!', error: error, username: username, email: email, phone: phone, password: password, cpass: cpass, fullname: fullname, code: code, pin: pin, serial: serial, sponsor: sponsor})
-          							}else{
-          								var user_pin = results[0].user;
-          								console.log('user in the pin is' + user_pin);
-          								if(user_pin !== null){
-            								var error = 'pin has been  used already!'
-            								res.render('register', {title: 'REGISTRATION UNSUSSESSFUL!', error: error, username: username, email: email, phone: phone, password: password, cpass: cpass, fullname: fullname, code: code, pin: pin, serial: serial, sponsor: sponsor});
-            								}else{
-            									db.query('SELECT user FROM pin WHERE user = ?', [username], function(err, results, fields){
-           		 								if (err) throw err;
-           		 								if(results.length  >= 1){
-           		 									var error = "Sorry, You cannot Join the Matrix because you are already in the matrix";
-           		 								res.render('register', {title: 'REGISTRATION UNSUSSESSFUL!', error: error, username: username, email: email, phone: phone, password: password, cpass: cpass, fullname: fullname, code: code, pin: pin, serial: serial, sponsor: sponsor});
-           		 								}else{
-           		 									bcrypt.hash(password, saltRounds, null, function(err, hash){
-           		 										db.query( 'CALL register(?, ?, ?, ?, ?, ?, ?, ?, ?)', [sponsor, fullname, phone, code, username, email, hash, 'active', 'no'], function(err, result, fields){
-                    										if (err) throw err;
-                    										db.query( 'UPDATE pin SET user = ? WHERE  serial = ?', [username, serial], function ( err, results, fields ){
-                    											if( err ) throw err;
-                    											//function for matrix
-                    											matrix.normal(username, res);
-                    										});
-                    									});
-                    								});
-                    							}
-                    						});			
-            								}
-          							}
-        							});
-    							}
-          				});
-            			}
+            		}else{
+            				
+						bcrypt.hash(password, saltRounds, null, function(err, hash){
+							db.query( 'CALL register(?, ?, ?, ?, ?, ?, ?, ?, ?)', [sponsor, fullname, phone, code, username, email, hash, 'active', 'no'], function(err, result, fields){
+								if (err) throw err;
+								var success = 'Your registration was successful. Please check your mail for a confirmation message';
+								res.render('register', {title: 'REGISTRATION SUCCESSFUL!', success: success});
+							});
+						});
+					 
+					}
           		});
           	}
           });
@@ -1321,5 +904,7 @@ router.post('/register', function (req, res, next) {
     });
   }
 });
+
+//post join request
 
 module.exports = router;

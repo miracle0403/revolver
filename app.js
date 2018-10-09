@@ -76,7 +76,7 @@ var options = {
   host: "localhost",
   user: "root",
   //password: 'Akahlineglobal',
-  database: "new"
+  database: "revolver"
 };
 
 app.use(myConnection(mysql, options, 'pool')); 
