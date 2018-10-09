@@ -8,9 +8,11 @@
 <div class="alert alert-success">
     All Earnings are calculated in Nigerian Naira.
   </div>
-  <div class="alert alert-info">
-     {{message}}
+  {{#if message}}
+	<div class="alert alert-info">
+    {{message}} 
   </div>
+{{/if}}
 <div class="content">
             <div class="container-fluid">
                 <div class="row">
@@ -52,20 +54,10 @@
                                     </div>
                                     <div class="col-xs-7">
                                         <div class="numbers">
-                                            <p><b>MY EARNINGS BREAKDOWN</b></p>
-                                            <p>Feeder: {{feeder}} </p>
-                                            <p>Stage One: {{stage1}}</p>
-                                             <p>Stage Two: {{stage2}}</p>
-                                              <p>Stage Three: {{stage3}}</p>
-                                               <p>Stage Four: {{stage4}} </p><br>
-                                                  <p>POWER BANK: {{powerbank}}</p>
-                                              <p>PHONE : {{phone}}</p>
-                                              <p>LAPTOP: {{laptop}}</p>
-                                              <p>CAR: {{car}}</p>
-                                              <p>EMPOWERMENT BONUS: {{empower}}</p>
-                                              <p>LEADERSHIP BONUS: {{leadership}}</p>
-                                              <p>SALARY: {{salary}}</p>
-                                               
+                                            <p><b>FFEDER BREAKDOWN</b></p>
+                                            <p>Entrance: {{feeder}} </p>
+                                            <p>Amount Earned: {{stage1}}</p>
+                                             
                                         </div>
                                     </div>
                                 </div>

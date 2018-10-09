@@ -368,11 +368,19 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 				res.render( 'dashboard', {title: 'DASHBOARD', error: error});
 			}else{
 				//check if the person has a paid plan.
-				db.query( 'SELECT user FROM pin WHERE user = ?', [username], function ( err, results, fields ){
+				db.query( 'SELECT user FROM feeder WHERE user = ?', [username], function ( err, results, fields ){
 					if( err ) throw err;
 					if (results.length === 0){
 						var message = 'You have not entered the matrix yet. Please enter the matrix';
 						res.render('dashboard', {title: 'DASHBOARD', message: message});
+					}else{
+						//check the number of times he has entered the feeder stage
+						db.query( 'SELECT count(user) AS feeder FROM feeder WHERE user = ?', [username], function ( err, results, fields ){
+							if( err ) throw err;
+							var feeder = results[0].feeder;
+							console.log(feeder);
+							res.render('dashboard', {title: 'DASHBOARD', feeder: feeder});
+						});
 					}
 				});
 			}
