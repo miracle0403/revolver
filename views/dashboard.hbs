@@ -21,15 +21,15 @@
                             <div class="content">
                                 <div class="row">
                                     <div class="col-xs-5">
-                                        <div class="icon-big icon-success text-center">
+                                        <div class="icon-big icon-danger text-center">
                                             <i class="ti-wallet"></i>
                                         </div>
                                     </div>
                                     <div class="col-xs-7">
                                         <div class="numbers">
                                             <p><b>MY EARNINGS SUMMARY </b></p>
-                                            <p>CASH: {{cash}}</p>
-                                              <p>GIFT: {{gift}}</p>
+                                            <p>Feeder: {{feederearn}}</p>
+                                            <p>Feeder Sponsor bonus: {{feeerbonus}}</p>
                                                 <p>TOTAL EARNED: {{total}}</p>
                                         </div>
                                     </div>
@@ -49,14 +49,14 @@
                                 <div class="row">
                                     <div class="col-xs-5">
                                         <div class="icon-big icon-success text-center">
-                                            <i class="ti-gift"></i>
+                                            <i class="ti-angle-double-right"></i>
                                         </div>
                                     </div>
                                     <div class="col-xs-7">
                                         <div class="numbers">
-                                            <p><b>FFEDER BREAKDOWN</b></p>
-                                            <p>Entrance: {{feeder}} </p>
-                                            <p>Amount Earned: {{stage1}}</p>
+                                            <p><b>TOTAL ENTRANCE</b></p>
+                                            <p>Feeder: {{feedentrance}} </p>
+                                            <p> TOTAL: {{totalentrance}}</p>
                                              
                                         </div>
                                     </div>
@@ -70,51 +70,36 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="card">
-                            <div class="content">
-                                <div class="row">
-                                    <div class="col-xs-5">
-                                        <div class="icon-big icon-danger text-center">
-                                            <i class="ti-wallet"></i>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-7">
-                                        <div class="numbers">
-                                            <p><b>MY WALLET </b> </p>
-                                                   <p>ACCOUNT BALANCE: {{balance}} </p>
-                                           
-                                               <form method ="POST" action ="/withdraw">
-              <div class="form-group">
-              <button type="submit" class="btn btn-primary">WITHDRAW</button>
-              </div>
-	  </form>
-                                           
-                                            
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="footer">
-                                    <hr />
-                                    <div class="stats">
-                                        <i class="ti-reload"></i> Updated Now
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    
                     <div class="col-lg-3 col-sm-6">
                         <div class="card">
                             <div class="content">
                                 <div class="row">
                                     <div class="col-xs-5">
                                         <div class="icon-big icon-warning text-center">
-                                            <i class="ti-user"></i>
+                                            <i class="ti-medall"></i>
                                         </div>
                                     </div>
                                     <div class="col-xs-7">
                                         <div class="numbers">
                                             <p><b>My Feeder Tree</b></p>
+                                            {{#if tree}}
+                                            <p>
+                                              {{a}}</p>
+                                             <p> {{b}}</p>
+                                            <p>  {{c}}</p>
+                                            {{/if}}
+                                            {{#if noenter}}
+        <form method ="POST" action ="/feeder">
+        <div class="container">
+        <p>You are not in the feeder Matrix... Click the button to join now.</p>
+          <button type="submit" id="feederbutton" class="btn btn-primary">Enter Feeder</button>
+        </div>
+        </form>
+        {{/if}}
+        {{#if noearn}}
+        <p> You do not have anyone in your feeder tree... Once you do, you will see them here</p>
+        {{/if}}
                                            {{#if feedertree}}
         {{#each feedertree}}
            <p>{{user}}</p>
@@ -135,125 +120,10 @@
                 </div>
                 
                 </div>
-                <!-- Start the second phase to finish the dashboard -->
-         <div class="content">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="card">
-                            <div class="content">
-                                <div class="row">
-                                    <div class="col-xs-5">
-                                        <div class="icon-big icon-info text-center">
-                                            <i class="ti-user"></i>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-7">
-                                        <div class="numbers">
-                                            <p><b>My Stage One Tree</b></p>
-                                            {{#if stage1tree}}
-        {{#each stage1tree}}
-           <p>{{user}}</p>
-        {{/each}}
-        {{/if}}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="footer">
-                                    <hr />
-                                    <div class="stats">
-                                        <i class="ti-reload"></i> Updated now
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="card">
-                            <div class="content">
-                                <div class="row">
-                                    <div class="col-xs-5">
-                                        <div class="icon-big icon-warning text-center">
-                                            <i class="ti-user"></i>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-7">
-                                        <div class="numbers">
-                                            <p>Stage2</p>
-                                            {{#if stage1tree}}
-        {{#each stage2tree}}
-           <p>{{user}}</p>
-        {{/each}}
-        {{/if}}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="footer">
-                                    <hr />
-                                    <div class="stats">
-                                        <i class="ti-calendar"></i> Updated Now
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="card">
-                            <div class="content">
-                                <div class="row">
-                                    <div class="col-xs-5">
-                                        <div class="icon-big icon-danger text-center">
-                                            <i class="ti-user"></i>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-7">
-                                        <div class="numbers">
-                                            <p>Stage 3</p>
-                                            {{#if stage3tree}}
-        {{#each stage3tree}}
-           <p>{{user}}</p>
-        {{/each}}
-        {{/if}}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="footer">
-                                    <hr />
-                                    <div class="stats">
-                                        <i class="ti-timer"></i> In the last hour
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="card">
-                            <div class="content">
-                                <div class="row">
-                                    <div class="col-xs-5">
-                                        <div class="icon-big icon-dark text-center">
-                                            <i class="ti-user"></i>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-7">
-                                        <div class="numbers">
-                                            <p>Stage 4</p>
-                                      {{#if stage4tree}}
-        {{#each stage4tree}}
-           <p>{{user}}</p>
-        {{/each}}
-        {{/if}}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="footer">
-                                    <hr />
-                                    <div class="stats">
-                                        <i class="ti-reload"></i> Updated now
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {{#if noenter}}
+                 {{> noenter}}
+                {{/if}}
+                {{#if noearn}}
+                 {{> noearn}}
+                {{/if}}
 {{> spagef}}

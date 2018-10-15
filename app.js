@@ -45,6 +45,9 @@ hbs.registerPartial('mainnav', mainnavTemplate);
 var noearnTemplate = fs.readFileSync(__dirname + '/views/noearn.hbs', 'utf8');
 hbs.registerPartial('noearn', noearnTemplate); 
 
+var noearnTemplate = fs.readFileSync(__dirname + '/views/noenter.hbs', 'utf8');
+hbs.registerPartial('noenter', noearnTemplate); 
+
 var mainhTemplate = fs.readFileSync(__dirname + '/views/mainh.hbs', 'utf8');
 hbs.registerPartial('mainh', mainhTemplate); 
 

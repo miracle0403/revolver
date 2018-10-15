@@ -1,0 +1,36 @@
+// check the earnings.
+							db.query( 'SELECT feeder  FROM earnings WHERE user = ?', [username], function ( err, results, fields ){
+								if( err ) throw err;
+								if( results.length === 0 ){
+									var feederearn = 0;
+									var total = 0;
+									var message  = "You have not earned yet";
+										// render it
+										res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noearn: message, message: message});
+									
+								}// if the user has earned
+								else{
+									// get the earnings
+									var feederearn = results[0].feeder;
+									var total = 0 + feederearn;
+									// get the legs.
+									db.query( 'SELECT a, b, c  FROM feeder_tree WHERE user = ?', [username], function ( err, results, fields ){
+										if( err ) throw err;
+										//get the last item 
+										var last = results.slice( -1 )[0];
+										var tree = {
+											a: last.a,
+											b: last.b,
+											c: last.c
+										}
+										// check if all is null
+										if( tree.a !== null && tree.b !== null && tree.c !== null  ){
+											var filled = "You have filled this cycle... please enter the matrix again";
+											res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noearn: filled, filled: filled});
+										}else{
+											//render the host of them
+											res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, a: tree.a, b: tree.b, c: tree.c, total: total, feedentrance: feedentrance, totalentrance: totalentrance, tree: tree});
+										}
+									});
+								}// end of the earnings else
+							});

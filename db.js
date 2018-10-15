@@ -19,7 +19,7 @@ pool.getConnection( function ( err, con ){
 		con.query( 'SELECT 1 + 4 AS solution', function ( err, results, fields ){
 			if ( err ) throw err;
 			else{
-			console.log( 'solution is ' + results[0]);
+			console.log( 'solution is ' + results[0].solution);
 			//console.log( 'i am collins love' );
 			pool.releaseConnection( con );
 			}

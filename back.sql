@@ -129,12 +129,10 @@ CREATE TABLE reset( user VARCHAR( 255 ) NOT NULL, status text, code int( 11 ) no
 				
 CREATE TABLE `feeder_tree` (
 	`matrix_id` INT(11) UNIQUE PRIMARY KEY AUTO_INCREMENT NOT NULL,
-	`sponsor` VARCHAR(255) NOT NULL,
 	`user` VARCHAR(255) NOT NULL,
 	`a` VARCHAR(255) NULL DEFAULT NULL,
 	`b` VARCHAR(255) NULL DEFAULT NULL,
-	`c` VARCHAR(255) NULL DEFAULT NULL,
-	`d` VARCHAR(255) NULL DEFAULT NULL
+	`c` VARCHAR(255) NULL DEFAULT NULL
 )
 COLLATE='latin1_swedish_ci'
 ENGINE=InnoDB
@@ -244,17 +242,16 @@ DELIMITER ;
 CREATE TABLE `earnings` (
 	`user` VARCHAR(255) NOT NULL,
 	`feeder` INT(11) NOT NULL,
-	`stage1` INT(11) NOT NULL,
-	`stage2` INT(11)  NOT NULL,
-	`stage3` INT(11) NOT NULL,
-	`stage4` INT(11) NOT NULL,
-	`powerbank` INT(11) NOT NULL,
-	`phone` INT(11) NOT NULL,
-	`laptop` INT(11) NOT NULL,
-	`leadership` INT(11) NOT NULL,
-	`empower` INT(11) NOT NULL,
-	`salary` INT(11) NOT NULL,
-	`car` INT(11) NOT NULL
+	`stage1` INT(11) NOT NULL
+);
+
+CREATE TABLE `feederpayment` (
+	`receiver` VARCHAR(255) NOT NULL,
+	`payer` VARCHAR(255) NOT NULL,
+	`account details` VARCHAR(255) NOT NULL,
+	`transaction_id` VARCHAR(255)  NULL,
+	`status` VARCHAR(255) NOT NULL,
+	`date` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 drop table transactions;
 CREATE TABLE `transactions` (
@@ -302,7 +299,7 @@ UPDATE user_tree SET rgt = rgt + 2 WHERE rgt > @myLeft;
 
 UPDATE user_tree SET lft = lft + 2 WHERE lft > @myLeft;
 
-INSERT INTO user_tree(sponsor, user, rgt, lft) VALUES(sponsor, username, @myLeft + 2, @myLeft + 1);
+INSERT INTO user_tree(sponsor, number, user, rgt, lft) VALUES(sponsor, 0, username, @myLeft + 2, @myLeft + 1);
 
 INSERT INTO user (sponsor, full_name, phone, code, username, email, password, status, verification) VALUES ( sponsor, full_name, phone,code, username, email, password, 'active', 'no');
 END//
@@ -313,12 +310,9 @@ CREATE TABLE `user_tree` (
 	`user` VARCHAR(255) NOT NULL,
 	`lft` INT(11) NOT NULL,
 	`rgt` INT(11) NOT NULL,
+	`number` INT(11) NOT NULL,
 	`feeder` VARCHAR(255)  NULL,
-	`stage1` VARCHAR(255)  NULL,
-	`stage2` VARCHAR(255)  NULL,
-	`stage3` VARCHAR(255)  NULL,
-	`stage4` VARCHAR(255)  NULL
-	
+	`stage1` VARCHAR(255)  NULL
 );
 drop table stage2;
 CREATE TABLE `stage2_tree` (

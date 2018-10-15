@@ -14,7 +14,7 @@ var router = express.Router();
 var mysql = require( 'mysql' );
 var db = require('../db.js');
 var expressValidator = require('express-validator'); 
-var  matrix = require('../functions/normal.js');
+var  matrix = require('../functions/normal.js'); 
  
 
 var bcrypt = require('bcrypt-nodejs');
@@ -42,7 +42,7 @@ var pool  = mysql.createPool({
 router.get('/', function(req, res, next) {
   console.log(req.user);
   
- 	res.render('index', { title: 'AKAHLINE GLOBAL SERVICES' });		
+ 	res.render('index', { title: 'SWIFT REVOLVER' });		
 
 });
 
@@ -62,7 +62,7 @@ router.get('/reset/:username/:email/:password/:code',  function (req, res, next)
   var username = req.params.username;
   var email = req.params.email;
   var password = req.params.password;
-  var username = req.params.username;
+  var username =  req.params.username;
   var code = req.params.code;
   //get username
     db.query('SELECT username FROM user WHERE username = ?', [username], function(err, results, fields){
@@ -257,10 +257,10 @@ router.get('/register/:username', function(req, res, next) {
     function(err, results, fields){
       if (err) throw err;
       if (results.length === 0){
-        res.render('register', {title: 'REGISTRATION'});
-        console.log('not a valid sponsor name');
+      		console.log('not a valid sponsor name');
+       	res.render('register', {title: 'REGISTRATION'});
        // req.flash( 'error', error.msg);
-        res.render( '/register')
+       // res.render( '/register')
       }else{
         var sponsor = results[0].username;
         console.log(sponsor)
@@ -287,10 +287,10 @@ router.get('/login', function(req, res, next) {
 			errors: flashMessages.error
 		});
 	}else{
-		res.render( 'login' )
+		res.render('login', { title: 'LOG IN'});
+		//res.render( 'login' )
 	}
 	//console.log( 'flash', flashMessages);
-  res.render('login', { title: 'LOG IN'});
 });
 
 //get referrals
@@ -372,14 +372,84 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 					if( err ) throw err;
 					if (results.length === 0){
 						var message = 'You have not entered the matrix yet. Please enter the matrix';
-						res.render('dashboard', {title: 'DASHBOARD', message: message});
-					}else{
+						var feedentrance = 0; 
+						var totalentrance = 0;
+						var feederearn = 0;
+						feederbonus: 0;
+						var total = 0;
+						res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noenter: message, feederbonus: feederbonus, message: message});
+					}else{ 
 						//check the number of times he has entered the feeder stage
-						db.query( 'SELECT count(user) AS feeder FROM feeder WHERE user = ?', [username], function ( err, results, fields ){
+						db.query( 'SELECT number FROM user_tree WHERE user = ?', [username], function ( err, results, fields ){
 							if( err ) throw err;
-							var feeder = results[0].feeder;
-							console.log(feeder);
-							res.render('dashboard', {title: 'DASHBOARD', feeder: feeder});
+							var feedentrance = results[0].number;
+							var totalentrance = 0 + feedentrance;
+							//check if the user is receiving
+							db.query( 'SELECT * FROM feederpayment WHERE receiver = ? and (status  = ? or status = ?) ', [username, 'pending', 'uploaded'], function ( err, results, fields ){
+								if( err ) throw err;
+								if( results.length === 0 ){
+									var status = 'No received payments';
+									//check for paid paymets
+									db.query( 'SELECT * FROM feederpayment WHERE payer = ? and (status  = ? or status = ?) ', [username, 'pending', 'uploaded'], function ( err, results, fields ){
+										if( err ) throw err;
+										if ( results.length === 0 ){
+											var noearn = "You do not have any unconfirmed payments";
+											// check for earnings
+											db.query( 'SELECT sum(feeder) as feeder, sum(feederbonus) as  feederbonus FROM earnings WHERE user = ?', [username], function ( err, results, fields ){
+												if( err ) throw err;
+												if( results.length === 0 ){
+													var feederearn = 0;
+													var feederbonus = 0;
+													var total = 0;
+													var message  = "You have not earned yet";
+										// render it
+													res.render ('dashboard', {title: 'DASHBOARD', feederbonus: feederbonus, feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noearn: message, message: message});
+									
+														}
+														else{
+															//get the values of the earnings.
+															var 	feederearn = results[0].feeder;
+															var 	feederbonus = results[0].feederbonus;
+															var total = feederbonus + feederearn;
+															// get the legs.
+															db.query( 'SELECT a, b, c  FROM feeder_tree WHERE user = ?', [username], function ( err, results, fields ){
+																if( err ) throw err;
+																var last = results.slice( -1 )[0];
+																var tree = {
+																	a: last.a,
+																	b: last.b,
+																	c: last.c
+																}
+																if( tree.a !== null && tree.b !== null && tree.c !== null  ){
+											var filled = "You have filled this cycle... please enter the matrix again";
+											res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, feederbonus: feederbonus, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noearn: filled, filled: filled});
+																}else{
+																	//render the host of them
+																	res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, a: tree.a, b: tree.b, c: tree.c, total: total, feedentrance: feedentrance, feederbonus: feederbonus,  totalentrance: totalentrance, tree: tree});
+																}
+															});
+														}
+													});
+												}
+										else{
+											var payer = results;
+										}
+									});
+								}else{
+									//create variables for received payments.
+									var received = results;
+									//get the paid
+									db.query( 'SELECT * FROM feederpayment WHERE payer = ? and (status  = ? or status = ?) ', [username, 'pending', 'uploaded'], function ( err, results, fields ){
+										if( err ) throw err;
+										if( results.length === 0 ){
+										//get the earnings
+										}
+										else{
+											var payer = results;
+										}
+									});
+								}
+							});
 						});
 					}
 				});
@@ -855,13 +925,7 @@ router.post('/register', function (req, res, next) {
   //req.checkBody('pin', 'Pin must be thirteen characters').len(13);
   //req.checkBody('serial', 'Serial must be ten characters').len(10);
   /*req.checkBody('pass1', 'Password must have upper case, lower case, symbol, and number').matches((?=,*\d)(?=, *[a-z])(?=, *[A-Z])(?!, [^a-zA-Z0-9]).{8,}$/, "i")*/
- 
-  var errors = req.validationErrors();
-	if (errors) { 
-  	  console.log(JSON.stringify(errors));
-  	  res.render('register', { title: 'REGISTRATION FAILED', errors: errors, username: username, email: email, phone: phone, password: password, cpass: cpass, fullname: fullname, code: code, pin: pin, serial: serial, sponsor: sponsor});
-  }else{
-  	var username = req.body.username;
+  var username = req.body.username;
     var password = req.body.pass1;
     var cpass = req.body.pass2;
     var email = req.body.email;
@@ -869,6 +933,15 @@ router.post('/register', function (req, res, next) {
     var code = req.body.code;
     var phone = req.body.phone;
 	var sponsor = req.body.sponsor;
+	
+ 
+  var errors = req.validationErrors();
+	if (errors) { 
+		
+  	  console.log(JSON.stringify(errors));
+  	  
+  	  res.render('register', { title: 'REGISTRATION FAILED', errors: errors, username: username, email: email, phone: phone, password: password, cpass: cpass, fullname: fullname, code: code, sponsor: sponsor});
+  }else{
 	//var pin = req.body.pin;
 	//var serial = req.body.serial;
 
@@ -880,19 +953,19 @@ router.post('/register', function (req, res, next) {
         var error = "This Sponsor does not exist";
         //req.flash( 'error', error)
         console.log(error);
-        res.render('register', {title: "REGISTRATION FAILED", error: error, username: username, email: email, phone: phone, password: password, cpass: cpass, fullname: fullname, code: code, pin: pin, serial: serial, sponsor: sponsor});
+        res.render('register', {title: "REGISTRATION FAILED", error: error, username: username, email: email, phone: phone, password: password, cpass: cpass, fullname: fullname, code: code,   sponsor: sponsor});
       }else{
       		db.query('SELECT username FROM user WHERE username = ?', [username], function(err, results, fields){
           	if (err) throw err;
           	if(results.length===1){
           		var error = "Sorry, this username is taken";
             		console.log(error);
-            		res.render('register', {title: "REGISTRATION FAILED", error: error, username: username, email: email, phone: phone, password: password, cpass: cpass, fullname: fullname, code: code, pin: pin, serial: serial, sponsor: sponsor});
+            		res.render('register', {title: "REGISTRATION FAILED", error: error, username: username, email: email, phone: phone, password: password, cpass: cpass, fullname: fullname, code: code,  sponsor: sponsor});
           	}else{
           		db.query('SELECT email FROM user WHERE email = ?', [email], function(err, results, fields){
           			if (err) throw err;
           			if(results.length===1){
-          				var error = "Sorry, this username is taken";
+          				var error = "Sorry, this email is taken";
             				console.log(error);
             		}else{
             				
