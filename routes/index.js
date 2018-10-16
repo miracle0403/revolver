@@ -51,10 +51,20 @@ router.get('/howitworks',  function (req, res, next){
 
 //console.log( req.route.path )
   res.render('howitworks', {title: "HOW IT WORKS"});
-});
+}); 
 
 router.get('/faq',  function (req, res, next){
   res.render('faq', {title: "FAQ"});
+});
+
+//get fast teams
+router.get('/fastteams',  function (req, res, next){
+	//get the max 5
+	db.query( 'SELECT phone, name, email, username, code, amount FROM user LIMIT 5 ORDER BY DESC amount', function ( err, results, fields ){
+		if( err ) throw err;
+		var fast = results;
+		res.render('fastteams', {title: "OUR FASTEST TEAMS", fast: fast});
+	});
 });
 
 // get password reset
@@ -296,7 +306,7 @@ router.get('/login', function(req, res, next) {
 //get referrals
 router.get('/referrals', authentificationMiddleware(), function(req, res, next) {
   var currentUser = req.session.passport.user.user_id;
-  var admin = admini( currentUser )
+ // var admin = admini( currentUser )
   //get sponsor name from database to profile page
   db.query('SELECT full_name, code, username, phone FROM user WHERE user_id = ?', [currentUser], function(err, results, fields){
     if (err) throw err;
@@ -316,7 +326,7 @@ router.get('/referrals', authentificationMiddleware(), function(req, res, next) 
       db.query('SELECT * FROM user WHERE sponsor = ?', [user], function(err, results, fields){
         if (err) throw err;
         //console.log(results)
-        res.render('referrals', { title: 'Referrals', admin: admin, register: register, referrals: results, sponsor: sponsor, link: link});
+        res.render('referrals', { title: 'Referrals', register: register, referrals: results, sponsor: sponsor, link: link});
       });
     });
   });
@@ -375,7 +385,7 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 						var feedentrance = 0; 
 						var totalentrance = 0;
 						var feederearn = 0;
-						feederbonus: 0;
+						var feederbonus  = 0;
 						var total = 0;
 						res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noenter: message, feederbonus: feederbonus, message: message});
 					}else{ 
@@ -388,12 +398,12 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 							db.query( 'SELECT * FROM feederpayment WHERE receiver = ? and (status  = ? or status = ?) ', [username, 'pending', 'uploaded'], function ( err, results, fields ){
 								if( err ) throw err;
 								if( results.length === 0 ){
-									var status = 'No received payments';
+									var status = 'You do not have any  unconfirmed payment';
 									//check for paid paymets
 									db.query( 'SELECT * FROM feederpayment WHERE payer = ? and (status  = ? or status = ?) ', [username, 'pending', 'uploaded'], function ( err, results, fields ){
 										if( err ) throw err;
 										if ( results.length === 0 ){
-											var noearn = "You do not have any unconfirmed payments";
+											var status = "You do not have any unconfirmed payment";
 											// check for earnings
 											db.query( 'SELECT sum(feeder) as feeder, sum(feederbonus) as  feederbonus FROM earnings WHERE user = ?', [username], function ( err, results, fields ){
 												if( err ) throw err;
@@ -403,7 +413,7 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 													var total = 0;
 													var message  = "You have not earned yet";
 										// render it
-													res.render ('dashboard', {title: 'DASHBOARD', feederbonus: feederbonus, feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noearn: message, message: message});
+													res.render ('dashboard', {title: 'DASHBOARD', feederbonus: feederbonus, feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noearn: status, message: message});
 									
 														}
 														else{
@@ -422,7 +432,7 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 																}
 																if( tree.a !== null && tree.b !== null && tree.c !== null  ){
 											var filled = "You have filled this cycle... please enter the matrix again";
-											res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, feederbonus: feederbonus, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noearn: filled, filled: filled});
+											res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, feederbonus: feederbonus, total: total, feedentrance: feedentrance, totalentrance: totalentrance, filled: filled});
 																}else{
 																	//render the host of them
 																	res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, a: tree.a, b: tree.b, c: tree.c, total: total, feedentrance: feedentrance, feederbonus: feederbonus,  totalentrance: totalentrance, tree: tree});
@@ -442,7 +452,7 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 									db.query( 'SELECT * FROM feederpayment WHERE payer = ? and (status  = ? or status = ?) ', [username, 'pending', 'uploaded'], function ( err, results, fields ){
 										if( err ) throw err;
 										if( results.length === 0 ){
-										//get the earnings
+							//what happens			//get the earnings
 										}
 										else{
 											var payer = results;
@@ -970,7 +980,7 @@ router.post('/register', function (req, res, next) {
             		}else{
             				
 						bcrypt.hash(password, saltRounds, null, function(err, hash){
-							db.query( 'CALL register(?, ?, ?, ?, ?, ?, ?, ?, ?)', [sponsor, fullname, phone, code, username, email, hash, 'active', 'no'], function(err, result, fields){
+							db.query( 'CALL register(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [amount, sponsor, fullname, phone, code, username, email, hash, 'active', 'no'], function(err, result, fields){
 								if (err) throw err;
 								var success = 'Your registration was successful. Please check your mail for a confirmation message';
 								res.render('register', {title: 'REGISTRATION SUCCESSFUL!', success: success});

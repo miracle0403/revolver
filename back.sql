@@ -242,6 +242,7 @@ DELIMITER ;
 CREATE TABLE `earnings` (
 	`user` VARCHAR(255) NOT NULL,
 	`feeder` INT(11) NOT NULL,
+	`feederbonus` INT(11) NOT NULL,
 	`stage1` INT(11) NOT NULL
 );
 
@@ -277,7 +278,7 @@ CREATE TABLE `withdraw` (
 );
 
 drop table user;
-CREATE TABLE `user`( user_id INT( 11 ) PRIMARY KEY AUTO_INCREMENT NOT NULL, sponsor text,  username varchar( 255 ) UNIQUE NOT NULL, full_name varchar ( 255 ) NOT NULL, verification text, status text, email varchar ( 255 ) UNIQUE NOT NULL, phone VARCHAR(255) NOT NULL, code INT( 11 ) NOT NULL, password varchar( 255 ) NOT NULL, paid varchar( 255 ),date DATETIME  DEFAULT CURRENT_TIMESTAMP)	;
+CREATE TABLE `user`( user_id INT( 11 ) PRIMARY KEY AUTO_INCREMENT NOT NULL, sponsor text,  username varchar( 255 ) UNIQUE NOT NULL, full_name varchar ( 255 ) NOT NULL, verification text, status text, email varchar ( 255 ) UNIQUE NOT NULL, phone VARCHAR(255) NOT NULL,  amount INT(11) NOT NULL, code INT( 11 ) NOT NULL, password varchar( 255 ) NOT NULL, paid varchar( 255 ),date DATETIME  DEFAULT CURRENT_TIMESTAMP)	;
 
 CREATE TABLE `profile` (
 	`user` VARCHAR (255) NOT NULL,
@@ -290,7 +291,7 @@ ENGINE=InnoDB
 ;
 
 DELIMITER //
-CREATE PROCEDURE `register`( sponsor TEXT, full_name VARCHAR( 255 ), phone VARCHAR( 255 ), code INT( 11 ), username VARCHAR( 255 ), email VARCHAR ( 255 ), password VARCHAR( 255 ), status VARCHAR( 255 ), verification TEXT)                                 
+CREATE PROCEDURE `register`( amount INT(11), sponsor TEXT, full_name VARCHAR( 255 ), phone VARCHAR( 255 ), code INT( 11 ), username VARCHAR( 255 ), email VARCHAR ( 255 ), password VARCHAR( 255 ), status VARCHAR( 255 ), verification TEXT)                                 
  BEGIN
 
 SELECT @myLeft := lft FROM user_tree WHERE user = sponsor;
@@ -301,7 +302,7 @@ UPDATE user_tree SET lft = lft + 2 WHERE lft > @myLeft;
 
 INSERT INTO user_tree(sponsor, number, user, rgt, lft) VALUES(sponsor, 0, username, @myLeft + 2, @myLeft + 1);
 
-INSERT INTO user (sponsor, full_name, phone, code, username, email, password, status, verification) VALUES ( sponsor, full_name, phone,code, username, email, password, 'active', 'no');
+INSERT INTO user (amount, sponsor, full_name, phone, code, username, email, password, status, verification) VALUES (0, sponsor, full_name, phone,code, username, email, password, 'active', 'no');
 END//
 DELIMITER ;
 drop table user_tree;

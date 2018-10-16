@@ -1,0 +1,21 @@
+{{> mainh}}
+ <div class="content-sec inner-sec">
+ <div class="row">
+ <div class="large-12 columns">
+ <h2>{{title}}</h2>
+ </div>
+ <div class="clearfix"></div>
+ {{#if fast}}
+ 	 {{#each fast}}
+ 	  <div class="large-6 medium-6 small-12 columns faq">
+ 	 	 <h3>{{name}}</h3>
+ 	 	 <p>Phone Number: {{code}}{{phone}}</p>
+ 	 	 <p>Email: {{email}}</p>
+ 	 	 <p>Number of referrals: {{amount}}</p>
+ 	 	 <p>Referral Link: <a href ="swiftrevolver.com/register/{{username}} "> swiftrevolver.com/register/{{username}}</a></p>
+ 	 </div>
+	 {{/each}}
+ {{/if}}
+ </div>
+ </div>   
+{{> mainf}}
