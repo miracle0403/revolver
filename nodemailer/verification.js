@@ -1,40 +1,30 @@
-exports.verifymail = function verifymail(x){
+exports.verifymail = function verifymail(user, x, code, password, sponsor, fullname, pin){
 	var nodemailer = require('nodemailer');
-	var details  = require( '../routes/index.js' );
-	var sname = details.sponsor;
-	var username = details.username;
-	var fullname  = details.fullname;
-	var email  = details.email;
-	var password = details.password;
-	var code = details.code;
-	var link = 'akahlineglobalservices.com/' + username + '/' + email + '/' + password + '/' + code;
+	var link = 'localhost:1437/' + user + '/' + x + '/' + password + '/' + code + '/' + pin;
 	
-	console.log( details);
+	//console.log( code);
 	var hbs = require('nodemailer-express-handlebars');
 	var transporter = nodemailer.createTransport({ 
-		host: 'server206.web-hosting.com', 
-		port: 26, 
-		secure: false, // true for 465, false for other ports
+		host: 'mail.privateemail.com', 
+		port: 465, 
+		secure: true, // true for 465, false for other ports
 		auth: { 
-			user: 'noreply@swiftcircle.website', // generated ethereal 
-			pass:  'Miracle1994' // generated ethereal password } }); 
+			user: 'admin@swiftrevolver.com', // generated ethereal 
+			pass:  '*Cw1Gw:ZdERt%' // generated ethereal password } }); 
 		  }
     });
-transporter.use('compile', hbs({ viewPath: '../views/', extName: '.hbs' })); 
+transporter.use('compile', hbs({ viewPath: './views/mail/', extName: '.hbs' })); 
 
 //the message properties
 	var mailOptions = {
-  		from: 'noreply@swiftcircle.website',
+  		from: 'admin@swiftrevolver.com',
   		to: x,
-  		subject: 'Verify Your Email',
+  		subject: 'Verify Your Email', 
 		template: 'emailverify',
   		context: {
-  			sponsor: sname,
   			password: password,
-  			code: code,
-  			email: email,
   			fullname: fullname,
-  			username: username,
+  			username: user,
   			link: link
   		}
 	}

@@ -125,7 +125,7 @@ DELIMITER ;
 
 CREATE TABLE pin( user VARCHAR(255) UNIQUE, serial text NOT NULL, pin varchar( 255 ) NOT NULL, date DATETIME  DEFAULT CURRENT_TIMESTAMP);
 
-CREATE TABLE reset( user VARCHAR( 255 ) NOT NULL, status text, code VARCHAR(255) not null, date DATETIME  DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE reset( user VARCHAR( 255 ) NOT NULL, status text, code VARCHAR(255) not null, password VARCHAR(255) null, date DATETIME  DEFAULT CURRENT_TIMESTAMP);
 
 CREATE TABLE verify( user VARCHAR( 255 ) NOT NULL, status text, code VARCHAR( 255) not null, date DATETIME  DEFAULT CURRENT_TIMESTAMP);
 				

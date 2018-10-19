@@ -1,24 +1,29 @@
-exports.newreferral= function newreferral(x){
+exports.newreferral= function newreferral( c, d, a, b){
 	var nodemailer = require('nodemailer');
 	var hbs = require('nodemailer-express-handlebars');
 	var transporter = nodemailer.createTransport({ 
-		host: 'server206.web-hosting.com', 
-		port: 26, 
-		secure: false, // true for 465, false for other ports
+		host: 'mail.privateemail.com', 
+		port: 465, 
+		secure: true, // true for 465, false for other ports
 		auth: { 
-			user: 'noreply@swiftcircle.website', // generated ethereal 
-			pass:  'Miracle1994' // generated ethereal password } }); 
+			user: 'admin@swiftrevolver.com', // generated ethereal 
+			pass:  '*Cw1Gw:ZdERt%' // generated ethereal password } }); 
 		  }
     });
-transporter.use('compile', hbs({ viewPath: './views/', extName: '.hbs' })); 
+transporter.use('compile', hbs({ viewPath: './views/mail', extName: '.hbs' })); 
 
 //the message properties
 	var mailOptions = {
-  		from: 'noreply@swiftcircle.website',
-  		to: x,
-  		subject: 'You Have A New REferral!',
-		template: 'emailreset'
-  		
+  		from: 'admin@swiftrevolver.com',
+  		to: d,
+  		subject: 'You Have A New Referral!',
+		template: 'new_referral',
+		context: {
+			fullname: c,
+			username: a,
+			email: b,
+			sponemail: d
+		}
 	}
 	
 // send the mail
@@ -30,6 +35,3 @@ transporter.use('compile', hbs({ viewPath: './views/', extName: '.hbs' }));
 		//console.log(module.exports.email);
   	});
 }
-
-
-

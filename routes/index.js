@@ -29,15 +29,17 @@ var pool  = mysql.createPool({
   waitForConnections: true,
   host: "localhost",
   user: "root",
-  //password: 'Akahlineglobal',
+  password: 'SwiftRevolver',
   database: "revolver"
 });
-
+/*var user = 'adminadmin';
+var email = 'mify1@yahoo.com';
+reset.sendverify( user, email )*/
 //
-//console.log( days )
+//c''onsole.log( days )
 //console.log( now )
 //var admin = admin( );
-//console.log( admin )
+//console.log( admin ) 
 /* GET home page. */
 router.get('/', function(req, res, next) {
   console.log(req.user);
@@ -60,7 +62,7 @@ router.get('/faq',  function (req, res, next){
 //get fast teams
 router.get('/fastteams',  function (req, res, next){
 	//get the max 5
-	db.query( 'SELECT phone, name, email, username, code, amount FROM user LIMIT 5 ORDER BY DESC amount', function ( err, results, fields ){
+	db.query( 'SELECT phone, full_name, email, username, code, amount FROM user ORDER BY amount DESC LIMIT 3', function ( err, results, fields ){
 		if( err ) throw err;
 		var fast = results;
 		res.render('fastteams', {title: "OUR FASTEST TEAMS", fast: fast});
@@ -68,56 +70,97 @@ router.get('/fastteams',  function (req, res, next){
 });
 
 // get password reset
-router.get('/reset/:username/:email/:password/:code',  function (req, res, next){
+router.get('/reset/:email/:id/:sponsor/:username/:pin',  function (req, res, next){
   var username = req.params.username;
   var email = req.params.email;
-  var password = req.params.password;
-  var username =  req.params.username;
-  var code = req.params.code;
+  var sponsor = req.params.sponsor;
+  var id =  req.params.id;
+  var pin = req.params.pin;
   //get username
-    db.query('SELECT username FROM user WHERE username = ?', [username], function(err, results, fields){
+    db.query('SELECT username FROM user WHERE username = ? and email = ? and user_id = ? and sponsor = ? ', [username, email, id, sponsor], function(err, results, fields){
       if (err) throw err;
       if (results.length === 0){
-        res.render('nullreset', {title: 'Invalid link'});
-		console.log('not a valid username');
+      		var error = 'Sorry, your link is invalid. kindly check your mail just to be sure';
+      		console.log( error )
+       	res.render('passwordreset', {title: 'PASSWORD RESET FAILED', error: error});
 	  }else{
-		  db.query('SELECT email FROM user WHERE email = ?', [email], function(err, results, fields){
-			if (err) throw err;
-			if (results.length === 0){
-				res.render('nullreset', {title: 'Invalid link'});
-				console.log('not a valid username');
-			}else{
-				db.query('SELECT password FROM user WHERE password = ?', [password], function(err, results, fields){
-					if (err) throw err;
-					if (results.length === 0){
-						res.render('nullreset', {title: 'Invalid link'});
-					}else{
-						db.query('SELECT code FROM reset WHERE status = ? AND user = ?', ['active', username], function(err, results, fields){
-							if (err) throw err;
-							if (results.length === 0){
-								res.render('nullreset', {title: 'Invalid link'});
-							}else{
-							var hash = results[0].code;
-								bcrypt.compare(code, hash, function(err, response){
-								if (response === true){
-									res.render('nullreset', {title: 'Invalid link'});
+			db.query('SELECT code FROM reset WHERE status = ? AND user = ?', ['active', username], function(err, results, fields){
+				if (err) throw err;
+				if (results.length === 0){
+					var error = 'Sorry you have an invalid link or the link your link might be expired.';
+					console.log( error )
+					res.render('passwordreset', {title: 'PASSWORD RESET FAILED', error: error});
+				}else{
+					var hash = results[0].code;
+					bcrypt.compare(pin, hash, function(err, response){
+						if (response !== true){
+						var error = 'Your link is invalid';
+						console.log( error )
+							res.render('passwordreset', {title: 'PASSWORD RESET FAILED', error: error});
 								}else {
-									db.query( 'UPDATE reset SET status = ? WHERE user = ?',['expired', username], function ( err, results, fields ){
+									db.query( 'UPDATE reset SET status = ?, password = ? WHERE user = ?',['expired', 'qualified', username], function ( err, results, fields ){
 											if( err ) throw err;
-											res.redirect( 'reset' );
-											});
-								}
-								});
-         
-							}
-						});
-					}
-				});
-			}
-		  });
-	  }
+											
+												var message = 'Email verified successfully you can now edit your password now ';
+												
+										console.log( message );	res.render( 'reset', {title: "PASSWORD RESET", message: message });
+							
+							});
+						}
+					});
+				}
+			});
+		}
 	});
 });
+
+// get verify
+router.get('/verify/:username/:email/:phone/:code/:pin',  function (req, res, next){
+  var username = req.params.username;
+  var email = req.params.email;
+  var code = req.params.code;
+  var phone = req.params.phone;
+  var pin = req.params.pin;
+  //get username
+    db.query('SELECT username FROM user WHERE username = ? and email = ? and phone = ? and code = ? ', [username, email, phone, code], function(err, results, fields){
+      if (err) throw err;
+      if (results.length === 0){
+      		var error = 'Sorry, your link is invalid. kindly check your mail just to be sure';
+      		console.log( error )
+       	res.render('verify', {title: 'VERIFICATION FAILED' , error: error});
+	  }else{
+			db.query('SELECT code FROM verify WHERE status = ? AND user = ?', ['active', username], function(err, results, fields){
+				if (err) throw err;
+				if (results.length === 0){
+					var error = 'Sorry you have an invalid link or the link your link might be expired.';
+					console.log( error )
+					res.render('verify', {title: 'VERIFICATION FAILED' , error: error});
+				}else{
+					var hash = results[0].code;
+					bcrypt.compare(pin, hash, function(err, response){
+						if (response !== true){
+						var error = 'Your link is invalid';
+						console.log( error )
+							res.render('verify', {title: 'VERIFICATION FAILED' , error: error});
+								}else {
+									db.query( 'UPDATE verify SET status = ? WHERE user = ?',['expired', username], function ( err, results, fields ){
+											if( err ) throw err;
+											db.query( 'UPDATE user SET verification = ? WHERE username = ?',['yes', username], function ( err, results, fields ){
+												if( err ) throw err;
+												var message = 'Email verified successfully you can now log in now  ';
+												
+										console.log( message );	res.render( 'verify', {title: "EMAIL VERIFICATION", message: message });
+								});
+							});
+						}
+					});
+				}
+			});
+		}
+	});
+});
+		 
+		 
 function restrict(x, y, res){
 	var currentUser = x
 	//the db query
@@ -310,8 +353,9 @@ router.get('/referrals', authentificationMiddleware(), function(req, res, next) 
   //get sponsor name from database to profile page
   db.query('SELECT full_name, code, username, phone FROM user WHERE user_id = ?', [currentUser], function(err, results, fields){
     if (err) throw err;
-    if( results.length === 0 ){
-		
+		db.query('SELECT user FROM admin WHERE user = ?', [currentUser], function(err, results, fields){
+    if (err) throw err;
+    if ( results.length === 0 ){
     	db.query('SELECT sponsor FROM user WHERE user_id = ?', [currentUser], function(err, results, fields){
     if (err) throw err;
     var sponsor = results[0].sponsor;
@@ -336,7 +380,7 @@ router.get('/referrals', authentificationMiddleware(), function(req, res, next) 
     if (err) throw err;
     var sponsor = results[0].sponsor;
     db.query('SELECT username FROM user WHERE user_id = ?', [currentUser], function(err, results, fields){
-      if (err) throw err;
+      if (err) throw err; 
       //get the referral link to home page
       //var website = "localhost:3002/";
       var user = results[0].username;
@@ -352,6 +396,7 @@ router.get('/referrals', authentificationMiddleware(), function(req, res, next) 
   });
     }
   });
+  });
 });
  
 
@@ -366,8 +411,11 @@ router.get('/logout', function(req, res, next) {
 router.get('/dashboard', authentificationMiddleware(), function(req, res, next) {
 	var db = require('../db.js');
 	var currentUser = req.session.passport.user.user_id;
-	admini( currentUser );
-	db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function ( err, results, fields ){
+	//admini( currentUser );
+	db.query( 'SELECT user FROM admin WHERE user = ?', [currentUser], function ( err, results, fields ){
+		if( err ) throw err;
+		if( results.length === 0 ){
+			db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function ( err, results, fields ){
 		if( err ) throw err;
 		var username = results[0].username; 
 		//check if the user has updated his profile
@@ -453,7 +501,7 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 										if( err ) throw err;
 										if( results.length === 0 ){
 							//what happens			//get the earnings
-										}
+										} 
 										else{
 											var payer = results;
 										}
@@ -466,6 +514,10 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 			}
 		});
 	});  
+		}
+		else{
+		}
+	});
 });
 	
 router.post('/sendmail',  function (req, res, next){
@@ -617,28 +669,25 @@ var errors = req.validationErrors();
 
   if (errors) { 
     console.log(JSON.stringify(errors));
-  res.render('reset', {title: "RESET PASSWORD FAILED", error: errors});
+  res.render('passwordreset', {title: "RESET PASSWORD FAILED", error: errors});
   }else{
   	var username = req.body.username;
   	var email = req.body.email;
-  }
-  pool.getConnection( function( err, con ){
-  if ( err ) throw err;
-  	con.query( 'SELECT username, email FROM user WHERE username = ? AND email = ?', [username, email], function ( err, results, fields ){
+  	db.query( 'SELECT username, email FROM user WHERE username = ? AND email = ?', [username, email], function ( err, results, fields ){
   		if( err ) throw err;
   		if( results.length === 0 ){
   			var error  = 'Sorry, We could not find your account';
-  			res.render('passwordreset', {title: "RESET PASSWORD FAILED", errors: error});
+  			res.render('passwordreset', {title: "RESET PASSWORD FAILED", error: error});
   		}else{
   			var username = results[0].username;
   			var email = results[0].email;
-  			var success = 'Great! We found your account! Check your mail for a confirmation mail. If you do not find it in your inbox, check your spam.'
+  			var success = 'Great! We found your account! Your email is ' + email + ' while your username is ' + username + '  Check your mail for a confirmation mail. If you do not find it in your inbox, check your spam.';
   			//function to send mail here
   			reset.sendreset( username, email );
-  			res.render('passwordreset', {title: "RESET PASSWORD", errors: success});
+  			res.render('passwordreset', {title: "RESET PASSWORD", success: success});
   		}
  	 })
-  });
+  }
 });
 
 
@@ -761,16 +810,38 @@ router.post('/pay', function (req, res, next) {
 });
 
 router.post('/reset', function(req, res, next) {
-	var password = req.body.password;
-	bcrypt.hash(password, saltRounds, null, function(err, hash){
-        db.query('UPDATE user SET password = ? WHERE username = ?', [hash, username], function(error, results, fields){
-          if (error) throw error;
-          var success = 'Password changed successfully!';
-          res.render( 'status',{success: success} ); 
-        });
-    });
-});
-
+	req.checkBody('password', 'Password must be between 8 to 25 characters').len(8,100);
+  req.checkBody('cpass', 'Password confirmation must be between 8 to 100 characters').len(8,100);
+  req.checkBody('password', 'Password must match').equals(req.body.cpass);
+  var errors = req.validationErrors();
+	if (errors) { 
+		
+  	  console.log(JSON.stringify(errors));
+  	  
+  	  res.render('reset', { title: 'PASSWORD RESET  FAILED', errors: errors});
+	  }else{
+  			var cpass = req.body.cpass;
+			var password = req.body.password;
+			var username = req.body.username;
+			db.query('SELECT username FROM reset WHERE password = ? and username = ?', ['qualified', username], function(error, results, fields){
+				if( err )throw err;
+				if( results.length === 0 ){
+					var error = "Please confirm your username... it isn't correct.";
+					res.render('reset', { title: 'PASSWORD RESET  FAILED', error: error});
+				}
+				else{
+					bcrypt.hash(password, saltRounds, null, function(err, hash){
+						db.query('UPDATE user SET password = ? WHERE username = ?', [hash, username], function(error, results, fields){
+        			  		if (error) throw error;
+        			  		var success = 'Password changed successfully!';
+          				res.render( 'reset',{success: success} ); 
+        				});
+					});
+				}
+			});
+		 }
+	 });
+	
 router.post('/search', authentificationMiddleware(), function  (req, res, next) {
 		var currentUser = req.session.passport.user.user_id;
 		var route = req.route.path;
@@ -919,7 +990,7 @@ router.post('/profile', function(req, res, next) {
 //var normal = require( '../functions/normal.js' );
 router.post('/register', function (req, res, next) {
 	//export the req, res and next
-	exports.res = res;
+	//exports.res = res;
 	console.log(req.body) 
   req.checkBody('sponsor', 'Sponsor must not be empty').notEmpty();
   req.checkBody('sponsor', 'Sponsor must be between 8 to 25 characters').len(8,25);
@@ -944,7 +1015,6 @@ router.post('/register', function (req, res, next) {
     var phone = req.body.phone;
 	var sponsor = req.body.sponsor;
 	
- 
   var errors = req.validationErrors();
 	if (errors) { 
 		
@@ -980,10 +1050,19 @@ router.post('/register', function (req, res, next) {
             		}else{
             				
 						bcrypt.hash(password, saltRounds, null, function(err, hash){
-							db.query( 'CALL register(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [amount, sponsor, fullname, phone, code, username, email, hash, 'active', 'no'], function(err, result, fields){
+							db.query( 'CALL register(?, ?, ?, ?, ?, ?, ?, ?, ?)', [ sponsor, fullname, phone, code, username, email, hash, 'active', 'no'], function(err, result, fields){
 								if (err) throw err;
-								var success = 'Your registration was successful. Please check your mail for a confirmation message';
+								db.query( 'SELECT amount from user where username  = ?', [ sponsor], function ( err, results, fields ){
+								if( err )throw err;
+								var amount = results[0].amount;
+								db.query( 'UPDATE user SET amount = ? WHERE username = ?', [amount + 1, sponsor], function( err, results, fields ){
+								if( err )throw err;
+								var success = 'Your registration was successful. Please check your mail for a confirmation message i you do not see it, check your spam.';
+								reset.sendverify( username, email, code, password );
+								 reset.newreferral( sponsor, username, email );
 								res.render('register', {title: 'REGISTRATION SUCCESSFUL!', success: success});
+								});
+								});
 							});
 						});
 					 
