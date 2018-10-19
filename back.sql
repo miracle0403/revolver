@@ -125,7 +125,9 @@ DELIMITER ;
 
 CREATE TABLE pin( user VARCHAR(255) UNIQUE, serial text NOT NULL, pin varchar( 255 ) NOT NULL, date DATETIME  DEFAULT CURRENT_TIMESTAMP);
 
-CREATE TABLE reset( user VARCHAR( 255 ) NOT NULL, status text, code int( 11 ) not null, date DATETIME  DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE reset( user VARCHAR( 255 ) NOT NULL, status text, code VARCHAR(255) not null, date DATETIME  DEFAULT CURRENT_TIMESTAMP);
+
+CREATE TABLE verify( user VARCHAR( 255 ) NOT NULL, status text, code VARCHAR( 255) not null, date DATETIME  DEFAULT CURRENT_TIMESTAMP);
 				
 CREATE TABLE `feeder_tree` (
 	`matrix_id` INT(11) UNIQUE PRIMARY KEY AUTO_INCREMENT NOT NULL,
@@ -291,7 +293,7 @@ ENGINE=InnoDB
 ;
 
 DELIMITER //
-CREATE PROCEDURE `register`( amount INT(11), sponsor TEXT, full_name VARCHAR( 255 ), phone VARCHAR( 255 ), code INT( 11 ), username VARCHAR( 255 ), email VARCHAR ( 255 ), password VARCHAR( 255 ), status VARCHAR( 255 ), verification TEXT)                                 
+CREATE PROCEDURE `register`( sponsor TEXT, full_name VARCHAR( 255 ), phone VARCHAR( 255 ), code INT( 11 ), username VARCHAR( 255 ), email VARCHAR ( 255 ), password VARCHAR( 255 ), status VARCHAR( 255 ), verification TEXT)                                 
  BEGIN
 
 SELECT @myLeft := lft FROM user_tree WHERE user = sponsor;
@@ -305,6 +307,7 @@ INSERT INTO user_tree(sponsor, number, user, rgt, lft) VALUES(sponsor, 0, userna
 INSERT INTO user (amount, sponsor, full_name, phone, code, username, email, password, status, verification) VALUES (0, sponsor, full_name, phone,code, username, email, password, 'active', 'no');
 END//
 DELIMITER ;
+
 drop table user_tree;
 CREATE TABLE `user_tree` (
 	`sponsor` VARCHAR(255) NOT NULL,

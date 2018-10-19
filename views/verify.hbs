@@ -10,8 +10,17 @@
 							<br>
 							<br>
 							<br>
-                            A mail has been sent to the email you registered with just now. If you did not get the mail, click here.
-
+                            <! --A mail has been sent to the email you registered with just now. If you did not get the mail, click here.-->
+                          {{#if error}}
+  <div class="alert alert-danger">
+    {{error}}
+  </div>
+  {{/if}}
+  {{#if message}}
+  <div class="alert alert-success">
+    {{message}} <a href = "/login"> click here</a>
+  </div>
+  {{/if}}
                             </div>
                         </div>
                     </div>

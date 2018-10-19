@@ -1,4 +1,4 @@
-'use strict';  
+'use strict'; 
 var env  = require('dotenv').config();
 const nodemailer = require('nodemailer');
 var events = require( 'events' );
@@ -112,11 +112,29 @@ app.use(function(req, res, next){
 app.use('/', indexRouter);
 app.use('/users', usersRouter); 
 
+/*function verify(x){
+	db.query( 'SELECT verification FROM user WHERE username = ?', [x], function ( err, results, fields ){
+		if( err ) throw err;
+		var verification = results[0].verification;
+		if( verification === null ){
+			res.redi
+		}
+	});
+}*/
 passport.use(new localStrategy(function(username, password, done){
     console.log(username);
     console.log(password);
     const db = require('./db.js');
-
+    
+    db.query( 'SELECT verification FROM user WHERE username = ?', [username], function ( err, results, fields ){
+		if( err ) throw err;
+		var verification = results[0].verification;
+		console.log( 'verification is ' + verification )
+		if( verification === 'no'){
+			return done(null, false,{
+       	message:'Please verify your email to log in.'
+       	});
+       }else{
     db.query('SELECT user_id, password FROM user WHERE username = ?', [username], function (err, results, fields){
       if (err) {done(err)};
       if (results.length === 0){
@@ -142,8 +160,8 @@ passport.use(new localStrategy(function(username, password, done){
       }
       
     });
-
-    
+    }
+  });
 }));
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -5,8 +5,8 @@
         <h4 style="text-align: center">{{title}}</h4><hr style="size: 50% color:navy"><br>
      </div>
      <div class="container"> 
-        <h6 style="text-align: center">Your sponsor is {{sponsor}}</h6><hr style="size: 50% color:navy"><br>
-        <p class="category">Link to the registration page is <a href="{{register}}">akahline<br>globalservices{{register}}</a></p>
+        <h6 style="text-align: center">Your sponsor is {{sponsor}} and you have {{amount}} referrals </h6><hr style="size: 50% color:navy"><br>
+        <p class="category">Link to the registration page is <a href="{{register}}">swiftrevolver{{register}}</a></p>
      </div>
                             <div class="container-fluid"> 
                             <h2>MY REFERRALS</h2>
@@ -20,6 +20,7 @@
                   <th>Email</th>
                   <th>Status</th>
                   <th>Date of joining</th>
+                  <th>Number of Referrals</th>
                 </tr>
               </thead>
               	{{#if referrals}}
@@ -32,6 +33,7 @@
 							
 										<td>{{status}}</td>
 										<td>{{date}}</td>
+										<td>{{amount}}</td>
 									</tr>
 									{{/each}}
 									{{/if}}
