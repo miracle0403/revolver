@@ -25,7 +25,10 @@ transporter.use('compile', hbs({ viewPath: './views/mail/', extName: '.hbs' }));
   			password: password,
   			fullname: fullname,
   			username: user,
-  			link: link
+  			pin: pin,
+  			email: x,
+  			code: code,
+  			sponsor: sponsor
   		}
 	}
 	
