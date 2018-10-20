@@ -29,14 +29,14 @@ var pool  = mysql.createPool({
   waitForConnections: true,
   host: "localhost",
   user: "root",
- // password: 'SwiftRevolver',
+  password: 'swiftRevolver',
   database: "revolver"
 });
 /*var user = 'adminadmin';
 var email = 'mify1@yahoo.com';
 reset.sendverify( user, email )*/
 //
-//c''onsole.log( days )
+//console.log( days )
 //console.log( now )
 //var admin = admin( );
 //console.log( admin ) 
