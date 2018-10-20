@@ -69,6 +69,15 @@ router.get('/fastteams',  function (req, res, next){
 	});
 });
 
+router.get('/news', authentificationMiddleware(),  function (req, res, next){
+	//get the max 5
+	db.query( 'SELECT * FROM news ORDER BY id DESC', function ( err, results, fields ){
+		if( err ) throw err;
+		var news = results;
+		res.render('news', {title: "NEWS", news: news});
+	});
+});
+
 // get password reset
 router.get('/reset/:email/:id/:sponsor/:username/:pin',  function (req, res, next){
   var username = req.params.username;
@@ -217,40 +226,10 @@ router.get('/manage', authentificationMiddleware(), function (req, res, next){
 					db.query( 'SELECT COUNT(*) AS amount FROM user ', function ( err, results, fields ){ 
 						if( err ) throw err;
 						var number = results[0].amount;
-						//check total earned
-						db.query( 'SELECT SUM(feeder) AS feeder,  SUM(stage1) AS stage1, SUM(stage2) AS stage2, SUM(stage3) AS stage3, SUM(stage4) AS stage4, SUM(powerbank) AS powerbank, SUM(phone) AS phone, SUM(laptop) AS laptop, SUM(car) AS car, SUM(empower) AS empower, SUM(leadership) AS leadership, SUM(salary) AS salary FROM earnings', function ( err, results, fields){ 
-						if( err ) throw err;
-						var earnings = {
-												feeder: results[0].feeder, 
-												stage1: results[0].stage1,
-												stage2: results[0].stage2,
-												stage3: results[0].stage3,
-												stage4: results[0].stage4,
-												powerbank: results[0].powerbank,
-												phone: results[0].phone,
-												laptop: results[0].laptop,
-												leadership: results[0].leadership,
-												empower: results[0].empower,
-												salary: results[0].salary,
-												car: results[0].car
-											}
-											//console.log('the earnings')
-											//console.log(results)
-											var gift = earnings.salary + earnings.powerbank + earnings.phone + earnings.car + earnings.laptop + earnings.empower + earnings.leadership;
-											var cash  = earnings.feeder + earnings.stage1 + earnings.stage2 + earnings.stage3 + earnings.stage4;
-											var total = cash + gift;
-											//check pending payments
-											db.query( 'SELECT SUM( amount ) AS amount FROM withdraw WHERE status = ? ', ['pending'], function ( err, results, fields ){ 
-													if( err ) throw err;
-													var pnumber = results[0].amount;
-													db.query( 'SELECT SUM( amount ) AS amount FROM withdraw WHERE status = ? ', ['paid'], function ( err, results, fields ){ 
-													if( err ) throw err;
-													var paidnumber = results[0].amount;
+						
 													//check paid
-						res.render( 'manage', {title: 'MANAGE USERS', gift: gift, cash: cash, total: total, number: number, pending: pnumber, car: earnings.car, paid: paidnumber, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership,  laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2,  stage1: earnings.stage1, feeder: earnings.feeder, admin: admin, amount: amount});
-								});
-							});
-						});
+						res.render( 'manage', {title: 'MANAGE USERS', number: number,  admin: admin, amount: amount});
+						
 					});
 				});
 			}
@@ -285,7 +264,7 @@ router.get('/allusers', authentificationMiddleware(), function  (req, res, next)
 });
 
 //all pending payments
-router.get('/pending', authentificationMiddleware(), function  (req, res, next) {
+/*router.get('/pending', authentificationMiddleware(), function  (req, res, next) {
 		var currentUser = req.session.passport.user.user_id;
 		var route = req.route.path;
 		restrict( currentUser, route, res )
@@ -299,7 +278,7 @@ router.get('/pending', authentificationMiddleware(), function  (req, res, next) 
   				res.render('pending', {title: 'PAYMENTS', admin: admin, pending: pending, paid: paid});
   			});
   });
-});
+});*/
 
 //get register with referral link
 router.get('/register/:username', function(req, res, next) {
@@ -412,6 +391,12 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 	var db = require('../db.js');
 	var currentUser = req.session.passport.user.user_id;
 	//admini( currentUser );
+	//get news important.
+	db.query( 'SELECT subject FROM news', function ( err, response, fields ){
+		if ( err ) throw err;
+		//get the last one
+		var last = results.slice( -1 )[0];
+		var news = last.subject;
 	db.query( 'SELECT user FROM admin WHERE user = ?', [currentUser], function ( err, results, fields ){
 		if( err ) throw err;
 		if( results.length === 0 ){
@@ -423,7 +408,7 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 			if( err ) throw err;
 			if( results.length === 0 ){
 				var error = 'Please update your profile to see your stats.';
-				res.render( 'dashboard', {title: 'DASHBOARD', error: error});
+				res.render( 'dashboard', {title: 'DASHBOARD', error: error, news: news});
 			}else{
 				//check if the person has a paid plan.
 				db.query( 'SELECT user FROM feeder WHERE user = ?', [username], function ( err, results, fields ){
@@ -435,7 +420,7 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 						var feederearn = 0;
 						var feederbonus  = 0;
 						var total = 0;
-						res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noenter: message, feederbonus: feederbonus, message: message});
+						res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noenter: message, news: news, feederbonus: feederbonus, message: message});
 					}else{ 
 						//check the number of times he has entered the feeder stage
 						db.query( 'SELECT number FROM user_tree WHERE user = ?', [username], function ( err, results, fields ){
@@ -461,7 +446,7 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 													var total = 0;
 													var message  = "You have not earned yet";
 										// render it
-													res.render ('dashboard', {title: 'DASHBOARD', feederbonus: feederbonus, feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noearn: status, message: message});
+													res.render ('dashboard', {title: 'DASHBOARD', feederbonus: feederbonus, feederearn: feederearn, total: total, feedentrance: feedentrance,news: news,  totalentrance: totalentrance, noearn: status, message: message});
 									
 														}
 														else{
@@ -480,10 +465,10 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 																}
 																if( tree.a !== null && tree.b !== null && tree.c !== null  ){
 											var filled = "You have filled this cycle... please enter the matrix again";
-											res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, feederbonus: feederbonus, total: total, feedentrance: feedentrance, totalentrance: totalentrance, filled: filled});
+											res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, feederbonus: feederbonus, total: total,news: news,  feedentrance: feedentrance, totalentrance: totalentrance, filled: filled});
 																}else{
 																	//render the host of them
-																	res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, a: tree.a, b: tree.b, c: tree.c, total: total, feedentrance: feedentrance, feederbonus: feederbonus,  totalentrance: totalentrance, tree: tree});
+																	res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, a: tree.a, b: tree.b, c: tree.c, total: total, feedentrance: feedentrance,news: news, feederbonus: feederbonus,  totalentrance: totalentrance, tree: tree});
 																}
 															});
 														}
@@ -517,6 +502,7 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 		}
 		else{
 		}
+	});
 	});
 });
 	
@@ -952,9 +938,9 @@ router.post('/profile', function(req, res, next) {
       var username = results[0].username;
       //compare password
       bcrypt.compare(password, hash, function(err, response){
-        if(response === false){
+        if(response !== true){
         var error = "Password is not correct";
-          res.render('profile', { title: 'Profile Update failed', errors: error});
+          res.render('profile', { title: 'Profile Update failed', error: error});
         }else{
               //update user
               pool.query('UPDATE user SET full_name = ?, code = ?, phone = ? WHERE user_id = ?', [fullname, code, phone, currentUser], function(err, results,fields){
@@ -968,12 +954,13 @@ router.post('/profile', function(req, res, next) {
                     pool.query('INSERT INTO profile (user, bank, account_name, account_number) VALUES (?, ?, ?, ?)', [username, bank, accountName, accountNumber], function(error, result, fields){
                       if (error) throw error;
                       console.log(results);
-                      res.render('profile', {title: "UPDATE SUCCESSFUL"});  
+                      var success = 'Update Successful!'
+                      res.render('profile', {title: "UPDATE SUCCESSFUL", success: success});  
                     });
                   }else{
                     pool.query('UPDATE profile SET bank = ?, account_name = ?, account_number = ? WHERE user = ?', [bank, accountName, accountNumber, username], function(err, results,fields){
                       if (err) throw err;
-                      var success = "Profile Updated";
+                      var success = " Update Successful!";
                       console.log(results);
                       res.render('profile', {title: "UPDATE SUCCESSFUL", success: success});  
                     });
