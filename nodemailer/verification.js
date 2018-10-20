@@ -1,4 +1,5 @@
-exports.verifymail = function verifymail(user, x, code, password, sponsor, fullname, pin){
+//user, email, code, password, rese.sponsor, rese.fullname, rese.phone, rese.pin
+exports.verifymail = function verifymail(user, x, code, password, sponsor, fullname, phone, pin){
 	var nodemailer = require('nodemailer');
 	var link = 'localhost:1437/' + user + '/' + x + '/' + password + '/' + code + '/' + pin;
 	
@@ -28,7 +29,8 @@ transporter.use('compile', hbs({ viewPath: './views/mail/', extName: '.hbs' }));
   			pin: pin,
   			email: x,
   			code: code,
-  			sponsor: sponsor
+  			sponsor: sponsor,
+  			phone: phone
   		}
 	}
 	

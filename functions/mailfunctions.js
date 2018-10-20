@@ -47,10 +47,11 @@ const saltRounds = bcrypt.genSalt( 10, rounds);
    //import the mail variable
 	var verify = require( '../nodemailer/verification.js' );
 		//select the variables in it
-		db.query( 'SELECT username, full_name, password, email, user_id, sponsor FROM user WHERE username = ?', [user], function ( err, results, fields ){
+		db.query( 'SELECT username, full_name, password, phone, email, user_id, sponsor FROM user WHERE username = ?', [user], function ( err, results, fields ){
 			if ( err ) throw err;
 			var rese = {
 				user_id: results[0].user_id,
+				phone: results[0].phone,
 				username: results[0].username,
 				sponsor: results[0].sponsor,
 				password: results[0].password,
@@ -64,7 +65,7 @@ const saltRounds = bcrypt.genSalt( 10, rounds);
       		//	exports.pin = pin;
        			 db.query('INSERT INTO verify (code, user, status) VALUES (?, ?, ?)', [hash, user, 'active'], function(error, results, fields){
          				 if (error) throw error;
-         				  verify.verifymail( user, email, code, password, rese.sponsor, rese.fullname, pin);
+         				  verify.verifymail( user, email, code, password, rese.sponsor, rese.fullname, rese.phone, pin);
          			 });
          		});
          	});
