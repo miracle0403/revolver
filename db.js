@@ -7,7 +7,7 @@ var pool  = mysql.createPool({
   waitForConnections: true,
   host: "localhost",
   user: "root",
-  password: 'SwiftRevolver',
+//  password: 'SwiftRevolver',
   database: "revolver"
 });
 

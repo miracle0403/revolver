@@ -78,7 +78,7 @@ var options = {
   connectionLimit : 100,
   host: "localhost",
   user: "root",
-  password: 'SwiftRevolver',
+  //password: 'SwiftRevolver',
   database: "revolver"
 };
 

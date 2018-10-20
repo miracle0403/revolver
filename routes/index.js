@@ -29,7 +29,7 @@ var pool  = mysql.createPool({
   waitForConnections: true,
   host: "localhost",
   user: "root",
-  password: 'SwiftRevolver',
+ // password: 'SwiftRevolver',
   database: "revolver"
 });
 /*var user = 'adminadmin';
@@ -49,7 +49,7 @@ router.get('/', function(req, res, next) {
 });
 
 // get how it works
-router.get('/howitworks',  function (req, res, next){
+router.get('/howitworks',  function (req, res, next){ 
 
 //console.log( req.route.path )
   res.render('howitworks', {title: "HOW IT WORKS"});
@@ -69,7 +69,7 @@ router.get('/fastteams',  function (req, res, next){
 	});
 });
 
-router.get('/news', authentificationMiddleware(),  function (req, res, next){
+router.get('/news',  function (req, res, next){
 	//get the max 5
 	db.query( 'SELECT * FROM news ORDER BY id DESC', function ( err, results, fields ){
 		if( err ) throw err;
