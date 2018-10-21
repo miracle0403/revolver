@@ -126,15 +126,6 @@ passport.use(new localStrategy(function(username, password, done){
     console.log(password);
     const db = require('./db.js');
     
-    db.query( 'SELECT verification FROM user WHERE username = ?', [username], function ( err, results, fields ){
-		if( err ) throw err;
-		var verification = results[0].verification;
-		console.log( 'verification is ' + verification )
-		if( verification === 'no'){
-			return done(null, false,{
-       	message:'Please verify your email to log in.'
-       	});
-       }else{
     db.query('SELECT user_id, password FROM user WHERE username = ?', [username], function (err, results, fields){
       if (err) {done(err)};
       if (results.length === 0){
@@ -142,7 +133,7 @@ passport.use(new localStrategy(function(username, password, done){
         	message: 'Invalid Username'
         });
       }
-      else {
+      else{
         console.log(results[0]);
         const hash = results[0].password.toString();
 
@@ -160,8 +151,6 @@ passport.use(new localStrategy(function(username, password, done){
       }
       
     });
-    }
-  });
 }));
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

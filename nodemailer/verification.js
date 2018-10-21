@@ -20,7 +20,7 @@ transporter.use('compile', hbs({ viewPath: './views/mail/', extName: '.hbs' }));
 	var mailOptions = {
   		from: 'admin@swiftrevolver.com',
   		to: x,
-  		subject: 'Verify Your Email', 
+  		subject: 'Welcome to SWIFT REVOLVER', 
 		template: 'emailverify',
   		context: {
   			password: password,
