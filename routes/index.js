@@ -392,8 +392,8 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 	var currentUser = req.session.passport.user.user_id;
 	//admini( currentUser );
 	//get news important.
-	db.query( 'SELECT subject FROM news', function ( err, response, fields ){
-		if ( err ) throw err;
+	db.query( 'SELECT subject FROM news', function ( err, results, fields ){
+		if ( err ) throw err; 
 		//get the last one
 		var last = results.slice( -1 )[0];
 		var news = last.subject;
