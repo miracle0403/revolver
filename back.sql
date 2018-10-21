@@ -181,6 +181,7 @@ CREATE TABLE `admin` (
 	`user` INT(11)NOT NULL
 );
 
+
 CREATE TABLE `stage2` (
 	`user` VARCHAR(255)NOT NULL,
 	`amount` INT(11) NOT NULL,
@@ -316,14 +317,10 @@ CREATE TABLE `user_tree` (
 	`user` VARCHAR(255) NOT NULL,
 	`lft` INT(11) NOT NULL,
 	`rgt` INT(11) NOT NULL,
-	`number` INT(11) NOT NULL,
-	`feeder` VARCHAR(255)  NULL,
-	`stage1` VARCHAR(255)  NULL
+	`number` INT(11) NULL,
+	`feeder` VARCHAR(255)NULL,
+	`stage1` VARCHAR(255) NULL
 );
-drop table stage2;
-CREATE TABLE `stage2_tree` (
-	`matrix_id` INT(11) PRIMARY KEY AUTO_INCREMENT NOT NULL,
-	`sponsor` VARCHAR(255) NOT NULL,
 	`user` VARCHAR(255) NOT NULL,
 	`a` VARCHAR(255) NULL DEFAULT NULL,
 	`b` VARCHAR(255) NULL DEFAULT NULL,
