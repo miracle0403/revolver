@@ -73,7 +73,7 @@ const saltRounds = bcrypt.genSalt( 10, rounds);
 exports.newreferral = function ( x, a, b){
 	var db = require( '../db.js' );
 	var referral = require( '../nodemailer/new_referral.js' );
-	db.query( 'SELECT full_name, email FROM user WHERE username = ?, [x]', function ( err, results, fields ){
+	db.query( 'SELECT full_name, email FROM user WHERE username = ?', [x], function ( err, results, fields ){
 		if( err ) throw err;
 		var spon = {
 			fullname: results[0].full_name,
