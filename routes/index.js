@@ -214,7 +214,7 @@ router.get('/manage', authentificationMiddleware(), function (req, res, next){
 	  db.query( 'SELECT user FROM admin WHERE user  = ?', [currentUser], function ( err, results, fields ){ 
 			if( err ) throw err;
 			if( results.length === 0 ){
-				res.redirect( 'dashboard' )
+				res.status( 404 ).render('404', {title: 'SORRY THIS PAGE DOES NOT EXIST.'});
 			}
 			else{
 			var admin = currentUser;
@@ -1013,5 +1013,8 @@ router.post('/register', function (req, res, next) {
 });
 
 //post join request
-
+//get error handler
+router.get('*', function(req, res){
+	res.status( 404 ).render('404', {title: 'SORRY THIS PAGE DOES NOT EXIST.'});
+});
 module.exports = router;
