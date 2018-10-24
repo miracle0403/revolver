@@ -315,6 +315,7 @@ router.get('/login', function(req, res, next) {
 	const flashMessages = res.locals.getMessages( );
 	if( flashMessages.error ){
 		res.render( 'login', {
+			title: 'LOGIN',
 			showErrors: true,
 			errors: flashMessages.error
 		});
@@ -369,7 +370,7 @@ router.get('/referrals', authentificationMiddleware(), function(req, res, next) 
       db.query('SELECT * FROM user WHERE sponsor = ?', [user], function(err, results, fields){
         if (err) throw err;
         //console.log(results)
-        res.render('referrals', { title: 'Referrals', admin: admin, register: register, referrals: results, sponsor: sponsor, admin: admin, link: link});
+        res.render('referrals', { title: 'Referrals', admin: admin, register: register, referrals: results, sponsor: sponsor, link: link});
       });
     });
   });
