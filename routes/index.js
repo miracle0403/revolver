@@ -59,6 +59,70 @@ router.get('/faq',  function (req, res, next){
   res.render('faq', {title: "FAQ"});
 });
 
+
+//get web courses
+router.get('/webcourse', authentificationMiddleware(), function (req, res, next){
+	db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function ( err, results, fields ){
+		if (err) throw err;
+		var username = results[0].username;
+		// check if the user is in the feeder matrix.
+		db.query( 'SELECT user FROM feeder WHERE user = ?', [username], function ( err, results, fields ){
+			if (err) throw err;
+			if (results.length === 0){
+				res.status(404).render('404', {title: "PAGE NOT FOUND"});
+			}else{
+				//check his feeder tree to see his last.
+				db.query( 'SELECT user FROM feeder_tree WHERE user = ?', [username], function ( err, results, fields ){
+					if (err) throw err;
+					var last = results.slice(-1)[0];
+					var lasttree = {
+						a: last.a,
+						b: last.b,
+						c: last.c
+					}
+					if (last.a === null || last.b === null || last.c === null){
+						res.render('webcourse', {title: 'WEB DEVELOPMENT COURSES'});
+					}else{
+						res.status(404).redirect('404')
+					}
+				});
+			}
+		});
+	});
+});
+
+//get web forum
+router.get('/webforum', authentificationMiddleware(), function (req, res, next){
+	db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function ( err, results, fields ){
+		if (err) throw err;
+		var username = results[0].username;
+		// check if the user is in the feeder matrix.
+		db.query( 'SELECT user FROM feeder WHERE user = ?', [username], function ( err, results, fields ){
+			if (err) throw err;
+			if (results.length === 0){
+				res.status(404).render('404', {title: "PAGE NOT FOUND"});
+			}else{
+				//check his feeder tree to see his last.
+				db.query( 'SELECT user FROM feeder_tree WHERE user = ?', [username], function ( err, results, fields ){
+					if (err) throw err;
+					var last = results.slice(-1)[0];
+					var lasttree = {
+						a: last.a,
+						b: last.b,
+						c: last.c
+					}
+					if (last.a === null || last.b === null || last.c === null){
+						res.render('webforum', {title: 'WEB DEVELOPMENT FORUM'});
+					}else{
+						res.status(404).redirect('404')
+					}
+				});
+			}
+		});
+	});
+});
+
+
 //get fast teams
 router.get('/fastteams',  function (req, res, next){
 	//get the max 5
@@ -177,7 +241,7 @@ function restrict(x, y, res){
 		if( err ) throw err;
 		if( results.length === 0 ){
 		console.log( 'user not an admin' )
-			res.redirect( 'dashboard' )
+			res.redirect( '404' )
 		}
 		else{
 			var route = y;
@@ -1014,6 +1078,83 @@ router.post('/register', function (req, res, next) {
 });
 
 //post join request
+router.post('/joinfeeder', function (req, res, next) {
+  //this should automatically select the person you should pay to. first thing is to check if the user has joined the feeder matrix before now.
+  //the user id is
+  var currentUser = req.session.passport.user.user_id;
+  //get the username.
+  db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function( err, results, fields ){
+		if( err )throw err;
+		var username = results[0].username;
+		//check for the sponsor
+		db.query( 'SELECT sponsor FROM user WHERE username = ?', [username], function( err, results, fields ){
+			if( err )throw err;
+			var sponsor = results[0].sponsor;
+			db.query( 'SELECT sponsor FROM user WHERE username = ?', [sponsor], function( err, results, fields ){
+				if( err )throw err;
+				//the sponsor of the sponsor is spon
+				var spon = results[0].sponsor;
+				//check if he is in the matrix now.
+				db.query( 'SELECT user FROM feeder_tree WHERE user = ?', [spon], function( err, results, fields ){
+					if( err )throw err;
+					if (results.length === 0){
+						var sponsorinherit = 'miracle0403';
+						//check how many times he has entered the feeder matrix.
+						db.query( 'SELECT number FROM user_tree WHERE user = ?', [username], function( err, results, fields ){
+							if(err) throw err;
+							var number = results[0].number;
+							if (number === 0){
+								// what to do if the user has not entered the matrix before.
+								matrix.nospon(username, sponinherit, number, res);
+							}else{
+								
+								
+							}
+						});
+					}else{
+						//code to execute
+						var last = results.slice(-1)[0];
+						var tree = {
+							a: last.a,
+							b: last.b,
+							c: last.c
+						}
+						if (last.a === null || last.b === null || last.c === null){
+							var sponsorinherit = spon;
+								//check how many times he has entered the feeder matrix.
+							db.query( 'SELECT number FROM user_tree WHERE user = ?', [username], function( err, results, fields ){
+								if(err) throw err;
+								var number = results[0].number;
+								if (number === 0){
+									// what to do if the user has not entered the matrix before.
+									matrix.nospon(username, sponinherit, number, res);
+								}else{
+								
+								
+								}
+							});
+						}else{
+							var sponsorinherit = 'miracle0403';
+								//check how many times he has entered the feeder matrix.
+								db.query( 'SELECT number FROM user_tree WHERE user = ?', [username], function( err, results, fields ){
+								if(err) throw err;
+								var number = results[0].number;
+								if (number === 0){
+									// what to do if the user has not entered the matrix before.
+									matrix.nospon(username, sponinherit, number, res);
+								
+								}else{
+								
+								
+								}
+							});
+						}
+					}
+				});
+			});
+		});
+	});
+});
 //get error handler
 router.get('*', function(req, res){
 	res.status( 404 ).render('404', {title: 'SORRY THIS PAGE DOES NOT EXIST.'});
