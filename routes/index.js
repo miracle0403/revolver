@@ -59,6 +59,7 @@ router.get('/faq',  function (req, res, next){
   res.render('faq', {title: "FAQ"});
 });
 
+//get dashboard
 
 //get web courses
 router.get('/webcourse', authentificationMiddleware(), function (req, res, next){
@@ -69,7 +70,7 @@ router.get('/webcourse', authentificationMiddleware(), function (req, res, next)
 		db.query( 'SELECT user FROM feeder WHERE user = ?', [username], function ( err, results, fields ){
 			if (err) throw err;
 			if (results.length === 0){
-				res.status(404).render('404', {title: "PAGE NOT FOUND"});
+				res.redirect('unauthorized');
 			}else{
 				//check his feeder tree to see his last.
 				db.query( 'SELECT user FROM feeder_tree WHERE user = ?', [username], function ( err, results, fields ){
@@ -83,7 +84,7 @@ router.get('/webcourse', authentificationMiddleware(), function (req, res, next)
 					if (last.a === null || last.b === null || last.c === null){
 						res.render('webcourse', {title: 'WEB DEVELOPMENT COURSES'});
 					}else{
-						res.status(404).redirect('404')
+						res.redirect('unauthorized');
 					}
 				});
 			}
@@ -100,7 +101,7 @@ router.get('/webforum', authentificationMiddleware(), function (req, res, next){
 		db.query( 'SELECT user FROM feeder WHERE user = ?', [username], function ( err, results, fields ){
 			if (err) throw err;
 			if (results.length === 0){
-				res.status(404).render('404', {title: "PAGE NOT FOUND"});
+				res.redirect('unauthorized');
 			}else{
 				//check his feeder tree to see his last.
 				db.query( 'SELECT user FROM feeder_tree WHERE user = ?', [username], function ( err, results, fields ){
@@ -114,7 +115,7 @@ router.get('/webforum', authentificationMiddleware(), function (req, res, next){
 					if (last.a === null || last.b === null || last.c === null){
 						res.render('webforum', {title: 'WEB DEVELOPMENT FORUM'});
 					}else{
-						res.status(404).redirect('404')
+						res.redirect('unauthorized');
 					}
 				});
 			}
@@ -139,6 +140,144 @@ router.get('/news',  function (req, res, next){
 		if( err ) throw err;
 		var news = results;
 		res.render('news', {title: "NEWS", news: news});
+	});
+});
+
+//get dashboard
+router.get('/dashboard', authentificationMiddleware(), function(req, res, next) {
+	var currentUser = req.session.passport.user.user_id;
+	db.query( 'SELECT subject FROM info WHERE user = ?', [currentUser], function ( err, results, fields ){
+		if ( err ) throw err; 
+		if (results.length === 0){
+			//get the subject being rendered.
+			db.query( 'SELECT subject FROM info', function ( err, results, fields ){
+				if ( err ) throw err;
+				var news = results[0].subject;
+				//check if the person is an admin or not
+				db.query( 'SELECT user FROM admin WHERE user = ?', [currentUser], function ( err, results, fields ){
+					if( err ) throw err;
+					if( results.length === 0 ){
+						db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function ( err, results, fields ){
+							if( err ) throw err;
+							var username = results[0].username;
+							//check if the user has updated his profile
+							db.query( 'SELECT user FROM profile WHERE user = ?', [username], function ( err, results, fields ){
+								if( err ) throw err;
+								if( results.length === 0 ){
+									var error = 'Please update your profile to see your stats.';
+									res.render( 'dashboard', {title: 'DASHBOARD', news: news, error: error});
+								}else{
+									db.query( 'SELECT user FROM feeder WHERE user = ?', [username], function ( err, results, fields ){
+										if( err ) throw err;
+										if (results.length === 0){
+											var message = 'You have not entered the matrix yet. Please enter the matrix';
+											var feedentrance = 0; 
+											var totalentrance = 0;
+											var feederearn = 0;
+											var feederbonus  = 0;
+											var total = 0;
+											res.render('dashboard', {title: 'DASHBOARD', news: news, feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noenter: message, news: news, feederbonus: feederbonus, message: message});
+										}else{
+											//check the number of times he has entered the feeder stage
+											db.query( 'SELECT COUNT(user) AS number FROM feeder_tree WHERE user = ?', [username], function ( err, results, fields ){
+												if( err ) throw err;
+												var feedentrance = results[0].number;
+												var totalentrance = 0 + feedentrance;
+												//check if the user is receiving
+												db.query( 'SELECT * FROM order WHERE receiver = ? and (status  = ? or status = ?) ', [username, 'pending', 'uploaded'], function ( err, results, fields ){
+													if( err ) throw err;
+													if( results.length === 0 ){
+														//check for paid paymets
+														db.query( 'SELECT * FROM order WHERE payer = ? and (status  = ? or status = ?) ', [username, 'pending', 'uploaded'], function ( err, results, fields ){
+															if( err ) throw err;
+															if ( results.length === 0 ){
+																// check for earnings
+																db.query( 'SELECT sum(feeder) as feeder, sum(feederbonus) as  feederbonus FROM earnings WHERE user = ?', [username], function ( err, results, fields ){
+																	if( err ) throw err;
+																	if( results.length === 0 ){
+																		var feederearn = 0;
+																		var feederbonus = 0;
+																		var total = 0;
+																		res.render ('dashboard', {title: 'DASHBOARD', feederbonus: feederbonus, feederearn: feederearn, total: total, feedentrance: feedentrance, news: news,  totalentrance: totalentrance, noearn: status, message: message});
+																	}else{
+																		//get the values of the earnings.
+																		var feederearn = results[0].feeder;
+																		var feederbonus = results[0].feederbonus;
+																		var total = feederbonus + feederearn;
+																		// get the legs.
+																		db.query( 'SELECT a, b, c  FROM feeder_tree WHERE user = ?', [username], function ( err, results, fields ){
+																			if( err ) throw err;
+																			var last = results.slice( -1 )[0];
+																			var tree = {
+																				a: last.a,
+																				b: last.b,
+																				c: last.c
+																			}
+																			if( tree.a !== null && tree.b !== null && tree.c !== null  ){
+																				var filled = "You have filled this cycle... please enter the matrix again";
+																				res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, feederbonus: feederbonus, total: total,news: news,  feedentrance: feedentrance, totalentrance: totalentrance, filled: filled});
+																			}else{
+																				//render the host of them
+																				res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, a: tree.a, b: tree.b, c: tree.c, total: total, feedentrance: feedentrance,news: news, feederbonus: feederbonus,  totalentrance: totalentrance, tree: tree});
+																			}
+																		});
+																	}
+																});
+															}else{
+																var payer = results; 
+															}
+														});
+													}else{
+														
+													}
+													var info = 'SOMEONE WANTS TO PAY YOU!';
+												});
+											});
+										}
+									});
+								}
+							});
+						});
+					}else{
+						//if an admin
+					}
+				});
+			});
+		}else{
+			//check if the person is an admin or not
+			db.query( 'SELECT user FROM admin WHERE user = ?', [currentUser], function ( err, results, fields ){
+				if( err ) throw err;
+				if( results.length === 0 ){
+					db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function ( err, results, fields ){
+						if( err ) throw err;
+						var username = results[0].username;
+						//check if the user has updated his profile
+						db.query( 'SELECT user FROM profile WHERE user = ?', [username], function ( err, results, fields ){
+							if( err ) throw err;
+							if( results.length === 0 ){
+								var error = 'Please update your profile to see your stats.';
+								res.render( 'dashboard', {title: 'DASHBOARD', error: error});
+							}else{
+								db.query( 'SELECT user FROM feeder WHERE user = ?', [username], function ( err, results, fields ){
+									if( err ) throw err;
+									if (results.length === 0){
+										var message = 'You have not entered the matrix yet. Please enter the matrix';
+										var feedentrance = 0; 
+										var totalentrance = 0;
+										var feederearn = 0;
+										var feederbonus  = 0;
+										var total = 0;
+										res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noenter: message, news: news, feederbonus: feederbonus, message: message});
+									}
+								});
+							}
+						});
+					});
+				}else{
+					//if an admin
+				}
+			});
+		}
 	});
 });
 
@@ -451,76 +590,7 @@ router.get('/logout', function(req, res, next) {
   res.redirect('/');
 });
 
-//get dashboard
-router.get('/dashboard', authentificationMiddleware(), function(req, res, next) {
-	var currentUser = req.session.passport.user.user_id;
-	//get news important.
-	db.query( 'SELECT subject FROM news', function ( err, results, fields ){
-		if ( err ) throw err; 
-		//get the last one
-		var last = results.slice( -1 )[0];
-		var news = last.subject;
-		db.query( 'SELECT user FROM admin WHERE user = ?', [currentUser], function ( err, results, fields ){
-			if( err ) throw err;
-			if( results.length === 0 ){
-				db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function ( err, results, fields ){
-					if( err ) throw err;
-					var username = results[0].username;
-					//check if the user has updated his profile
-					db.query( 'SELECT user FROM profile WHERE user = ?', [username], function ( err, results, fields ){
-						if( err ) throw err;
-						if( results.length === 0 ){
-							var error = 'Please update your profile to see your stats.';
-							res.render( 'dashboard', {title: 'DASHBOARD', error: error, news: news});
-						}else{
-							//check if the person has a paid plan.
-							db.query( 'SELECT user FROM feeder WHERE user = ?', [username], function ( err, results, fields ){
-								if( err ) throw err;
-								if (results.length === 0){
-									var message = 'You have not entered the matrix yet. Please enter the matrix';
-									var feedentrance = 0; 
-									var totalentrance = 0;
-									var feederearn = 0;
-									var feederbonus  = 0;
-									var total = 0;
-									res.render('dashboard', {title: 'DASHBOARD', feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noenter: message, news: news, feederbonus: feederbonus, message: message});
-								}
-							});
-						}
-					});
-				});
-			}else{
-				db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function ( err, results, fields ){
-					if( err ) throw err;
-					var admin = username;
-					var username = results[0].username;
-					//check if the user has updated his profile
-					db.query( 'SELECT user FROM profile WHERE user = ?', [username], function ( err, results, fields ){
-						if( err ) throw err;
-						if( results.length === 0 ){
-							var error = 'Please update your profile to see your stats.';
-							res.render( 'dashboard', {title: 'DASHBOARD', error: error, admin: admin, news: news});
-						}else{
-							//check if the person has a paid plan.
-							db.query( 'SELECT user FROM feeder WHERE user = ?', [username], function ( err, results, fields ){
-								if( err ) throw err;
-								if (results.length === 0){
-									var message = 'You have not entered the matrix yet. Please enter the matrix';
-									var feedentrance = 0; 
-									var totalentrance = 0;
-									var feederearn = 0;
-									var feederbonus  = 0;
-									var total = 0;
-									res.render('dashboard', {title: 'DASHBOARD', admin: admin, feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noenter: message, news: news, feederbonus: feederbonus, message: message});
-								}
-							});
-						}
-					});
-				});
-			}
-		});
-	});
-});
+
 router.post('/sendmail',  function (req, res, next){
 	var mail = req.body.mail;
 	var subject = req.body.subject;

@@ -124,7 +124,7 @@ exports.feederspill = function feederspill( username, user, sponsor, res){
 														code: results[0].code
 													}
 													//enter it into the order table
-													db.query('CALL earnings(?,?,?,?,?,?,?,?)', [user, contact.full_name, contact.phone, contact.code, bank.bank, bank. account_name, bank.account_number], function(err, results, fields){
+													db.query('CALL penalty(?,?,?,?,?,?,?,?)', [user, contact.full_name, contact.phone, contact.code, bank.bank, bank. account_name, bank.account_number], function(err, results, fields){
 														if (err) throw err;
 														res.redirect('dashboard');
 													});
@@ -159,7 +159,7 @@ exports.feederspill = function feederspill( username, user, sponsor, res){
 															code: results[0].code
 														}
 														//enter it into the order table
-														db.query('CALL earnings(?,?,?,?,?,?,?,?)', [user, contact.full_name, contact.phone, contact.code, bank.bank, bank. account_name, bank.account_number], function(err, results, fields){
+														db.query('CALL feederbonus(?,?,?,?,?,?,?,?)', [user, contact.full_name, contact.phone, contact.code, bank.bank, bank. account_name, bank.account_number], function(err, results, fields){
 															if (err) throw err;
 															res.redirect('dashboard');
 														});
@@ -187,7 +187,7 @@ exports.feederspill = function feederspill( username, user, sponsor, res){
 															code: results[0].code
 														}
 														//enter it into the order table
-														db.query('CALL earnings(?,?,?,?,?,?,?,?)', [user, contact.full_name, contact.phone, contact.code, bank.bank, bank. account_name, bank.account_number], function(err, results, fields){
+														db.query('CALL penalty(?,?,?,?,?,?,?,?)', [user, contact.full_name, contact.phone, contact.code, bank.bank, bank. account_name, bank.account_number], function(err, results, fields){
 															if (err) throw err;
 															res.redirect('dashboard');
 														});
