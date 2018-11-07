@@ -25,7 +25,7 @@
                                     <div class="col-xs-7">
                                         <div class="numbers"> 
                                             <p><b>ALL USERS</b></p>
-                                           <p> You have {{number}} users. <a href="allusers">Click here </a> to view.</p>
+                                           <p> You have {{number}} users. <a href="/allusers/#users">Click here </a> to view.</p>
                                                        
                                         </div>
                                     </div>
@@ -88,7 +88,7 @@ btn-primary">Send Mail</button>
                                     <div class="col-xs-7">
                                         <div class="numbers">
                                             <p><b>MANAGE ADMIN</b></p>
-                                            <p> You have {{amount}} admins. <a href="allusers">Click here </a> to view.</p>
+                                            <p> You have {{amount}} admins. <a href="/allusers/#admins">Click here </a> to view.</p>
                                            <form method ="POST" action ="/addadmin">
                                             <div class="form-group">
     <input type="number" class="form-control" 
@@ -127,22 +127,28 @@ btn-primary">Delete Admin</button> </form>
                                     </div>
                                     <div class="col-xs-7">
                                         <div class="numbers">
-                                            <p><b>TRANSACTIONS</b></p>
-                                           <form method ="POST" action ="/search">
+                                            <p><b>NEWS</b></p>
+                                           <form method ="POST" action ="/addnews">
                                             <div class="form-group">
     <input type="text" class="form-control" 
-id="username" name ="username" placeholder="Enter Username" required />
+id="text" name ="subject" placeholder="Enter Subject of the news" required />
+</div>
+<div class="form-group">
+<textarea rows="5" class="form-control border-input" placeholder="Type news here" name ="texts" value=""></textarea>
+ </div>
+ <div class="form-group">
+ <button type="submit" class="btn 
+btn-primary">Add News</button></div> </form>
+                                             <form method ="POST" action ="/searchorder">
+                                            <div class="form-group">
+    <input type="number" class="form-control" id="order" name ="orderId" placeholder="Enter OrderId" required />
 </div>
 <div class="form-group"> <button type="submit" class="btn 
 btn-primary">Search</button></div> </form>
-                                             <form method ="POST" action ="/block">
-                                            <div class="form-group">
-    <input type="text" class="form-control" 
-id="user" name ="user" placeholder="Enter Username" required />
-</div>
+<br>
+<form method ="POST" action ="/confirmorder">
  <div class="form-group">
-    <input type="text" class="form-control" 
-id="teller" name ="id" placeholder="Debit slip ID" required />
+    <input type="number" class="form-control" id="order" name ="orderId" placeholder="Enter OrderId" required />
 </div>
 <div class="form-group"> <button type="submit" class="btn 
 btn-primary">Pay User</button></div> </form>

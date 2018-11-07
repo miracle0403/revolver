@@ -1,13 +1,15 @@
 {{> spageh}}
+<br>
+<br>
 {{#if success}}
 	<div class="alert alert-info">
-    {{success}}
+    {{{success}}}
   </div>
   {{/if}}
   
   {{#if error}}
 	<div class="alert alert-danger">
-    {{error}}
+    {{{error}}}
   </div>
   {{/if}}
   <br><br>
@@ -16,3 +18,4 @@
     		<p> Go back to <a href="/dashboard">dashboard</a></p>
  		</div>
   </div>
+  {{> spagef}}

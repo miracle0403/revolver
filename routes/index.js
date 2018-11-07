@@ -146,7 +146,11 @@ router.get('/news',  function (req, res, next){
 //get dashboard
 router.get('/dashboard', authentificationMiddleware(), function(req, res, next) {
 	var currentUser = req.session.passport.user.user_id;
-	db.query( 'SELECT subject FROM info WHERE user = ?', [currentUser], function ( err, results, fields ){
+	db.query( 'SELECT subject FROM news', function ( err, results, fields ){
+		if ( err ) throw err;
+		var last = result.slice(-1)[0];
+		var subject = last.subject;
+	db.query( 'SELECT subject FROM info WHERE user = ? and subject = ?', [currentUser, subject], function ( err, results, fields ){
 		if ( err ) throw err; 
 		if (results.length === 0){
 			//get the subject being rendered.
@@ -916,6 +920,7 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 			//});
 		}
 	});
+	});
 });
 
 // get password reset
@@ -1245,6 +1250,45 @@ router.post('/sendmail',  function (req, res, next){
 		i++;
 		res.render( 'status', {success: success});
 		}
+	});
+});
+
+// add news
+router.post('/addnews', function (req, res, next){
+	var subject = req.body.subject;
+	var texts = req.body.texts;
+	//delete the ones in the info table.
+	db.query('DELETE FROM info', function(err, results, fields){
+		if (err) throw err;
+		//add to the news table
+		db.query('INSERT INTO news (subject, text) VALUES (?,?)', [subject, texts], function(err, result, fields){
+			if (err) throw err;
+			var success = 'news added successfully';
+			res.render('status', {success: success});
+		});
+	});
+});
+
+//post search order
+router.post('/searchorder', function (req, res, next){
+	var id = req.body.orderId;
+	//get it first
+	db.query('SELECT * FROM order WHERE id = ?', [id], function(err, results, fields){
+		if( err ) throw err;
+		var order = {
+			name: results[0].fullname,
+			payer: results[0].payer,
+			receiver: results[0].receiver,
+			phone: results[0].phone,
+			code: results[0].code,
+			user: results[0].user;
+			bank: results[0].bank,
+			accountName: results[0].accountName,
+			accountNumber: results[0].accountNumber, 
+			date: results[0].date
+		}
+		//interprete it to the success variable
+		var success = 'Payer: ' + order.payer + <br> + 'Receiver: ' + order.receiver + <br> + 'Full Name: ' + order.name <br>  
 	});
 });
 //delete admin
