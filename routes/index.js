@@ -1079,81 +1079,22 @@ router.post('/register', function (req, res, next) {
 
 //post join request
 router.post('/joinfeeder', function (req, res, next) {
-  //this should automatically select the person you should pay to. first thing is to check if the user has joined the feeder matrix before now.
-  //the user id is
-  var currentUser = req.session.passport.user.user_id;
-  //get the username.
-  db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function( err, results, fields ){
+	var currentUser = req.session.passport.user.user_id;
+	//get the username.
+	db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function( err, results, fields ){
 		if( err )throw err;
 		var username = results[0].username;
 		//check for the sponsor
 		db.query( 'SELECT sponsor FROM user WHERE username = ?', [username], function( err, results, fields ){
 			if( err )throw err;
 			var sponsor = results[0].sponsor;
-			db.query( 'SELECT sponsor FROM user WHERE username = ?', [sponsor], function( err, results, fields ){
-				if( err )throw err;
-				//the sponsor of the sponsor is spon
-				var spon = results[0].sponsor;
-				//check if he is in the matrix now.
-				db.query( 'SELECT user FROM feeder_tree WHERE user = ?', [spon], function( err, results, fields ){
-					if( err )throw err;
-					if (results.length === 0){
-						var sponsorinherit = 'miracle0403';
-						//check how many times he has entered the feeder matrix.
-						db.query( 'SELECT number FROM user_tree WHERE user = ?', [username], function( err, results, fields ){
-							if(err) throw err;
-							var number = results[0].number;
-							if (number === 0){
-								// what to do if the user has not entered the matrix before.
-								matrix.nospon(username, sponinherit, number, res);
-							}else{
-								
-								
-							}
-						});
-					}else{
-						//code to execute
-						var last = results.slice(-1)[0];
-						var tree = {
-							a: last.a,
-							b: last.b,
-							c: last.c
-						}
-						if (last.a === null || last.b === null || last.c === null){
-							var sponsorinherit = spon;
-								//check how many times he has entered the feeder matrix.
-							db.query( 'SELECT number FROM user_tree WHERE user = ?', [username], function( err, results, fields ){
-								if(err) throw err;
-								var number = results[0].number;
-								if (number === 0){
-									// what to do if the user has not entered the matrix before.
-									matrix.nospon(username, sponinherit, number, res);
-								}else{
-								
-								
-								}
-							});
-						}else{
-							var sponsorinherit = 'miracle0403';
-								//check how many times he has entered the feeder matrix.
-								db.query( 'SELECT number FROM user_tree WHERE user = ?', [username], function( err, results, fields ){
-								if(err) throw err;
-								var number = results[0].number;
-								if (number === 0){
-									// what to do if the user has not entered the matrix before.
-									matrix.nospon(username, sponinherit, number, res);
-								
-								}else{
-								
-								
-								}
-							});
-						}
-					}
-				});
-			});
+			matrix.nospon(username, sponsor, res);
 		});
 	});
+});
+//get error handler for unauthorized
+router.get('/unauthorized', function(req, res){
+	res.status( 401).render('404', {title: 'YOU DO NOT HAVE PERMISSION TO VIEW THIS PAGE. YOU DO NOT HAVE AN ACTIVE MATRIX. PLEASE GO AND PURCHASE A MATRIX TO VIEW THIS PAGE.'});
 });
 //get error handler
 router.get('*', function(req, res){
