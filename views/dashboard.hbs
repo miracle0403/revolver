@@ -5,17 +5,24 @@
     {{error}} 
   </div>
 {{/if}}
-<div class="alert alert-success">
-    All Earnings are calculated in Nigerian Naira.
-  </div>
   {{#if message}}
 	<div class="alert alert-info">
     {{message}} 
   </div>
 {{/if}}
+{{#if info}}
 	<div class="alert alert-info">
-   <b> {{news}}  <a href="/news">click here </a> to read more</b>
+    {{info}} 
   </div>
+{{/if}}
+{{#if news}}
+	<div class="alert alert-info">
+    <form method ="POST" action ="/newsc">
+		<input type = "text" name = "news" readonly class = "form-control-plaintext" id = "staticemail" value = "{{news}}"> click <a href = "/news" target = "_blank"> here </a>to read more.
+		<button type="submit" id="cancel" class="btn btn-info">x</button>
+	</form>
+  </div>
+{{/if}}
       <div class="container-fluid">
       <div class= "bg bg-danger">
       	 	 <div style= "text-align: center">
