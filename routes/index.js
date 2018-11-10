@@ -63,6 +63,8 @@ router.get('/faq',  function (req, res, next){
 
 //get web courses
 router.get('/webcourse', authentificationMiddleware(), function (req, res, next){
+	var currentUser = req.session.passport.user.user_id;
+	console.log( currentUser)
 	db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function ( err, results, fields ){
 		if (err) throw err;
 		var username = results[0].username;
@@ -94,6 +96,7 @@ router.get('/webcourse', authentificationMiddleware(), function (req, res, next)
 
 //get web forum
 router.get('/webforum', authentificationMiddleware(), function (req, res, next){
+	var currentUser = req.session.passport.user.user_id;
 	db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function ( err, results, fields ){
 		if (err) throw err;
 		var username = results[0].username;
@@ -144,19 +147,19 @@ router.get('/news',  function (req, res, next){
 });
 
 //get dashboard
-router.get('/dashboard', authentificationMiddleware(), function(req, res, next) {
+router.get('/dashboard', authentificationMiddleware(), function(req, res, next) { 
 	var currentUser = req.session.passport.user.user_id;
 	db.query( 'SELECT subject FROM news', function ( err, results, fields ){
 		if ( err ) throw err;
-		var last = result.slice(-1)[0];
+		var last = results.slice(-1)[0];
 		var subject = last.subject;
 	db.query( 'SELECT subject FROM info WHERE user = ? and subject = ?', [currentUser, subject], function ( err, results, fields ){
 		if ( err ) throw err; 
 		if (results.length === 0){
 			//get the subject being rendered.
-			db.query( 'SELECT subject FROM info', function ( err, results, fields ){
+			db.query( 'SELECT subject FROM news', function ( err, results, fields ){
 				if ( err ) throw err;
-				var news = results[0].subject;
+				var news = results.slice( -1 )[0].subject;
 				//check if the person is an admin or not
 				db.query( 'SELECT user FROM admin WHERE user = ?', [currentUser], function ( err, results, fields ){
 					if( err ) throw err;
@@ -188,11 +191,11 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 												var feedentrance = results[0].number;
 												var totalentrance = 0 + feedentrance;
 												//check if the user is receiving
-												db.query( 'SELECT * FROM order WHERE receiver = ? and (status  = ? or status = ?) ', [username, 'pending', 'uploaded'], function ( err, results, fields ){
+												db.query( 'SELECT * FROM orders WHERE receiver = ? and (status  = ? or status = ?) ', [username, 'pending', 'uploaded'], function ( err, results, fields ){
 													if( err ) throw err;
 													if( results.length === 0 ){
 														//check for paid paymets
-														db.query( 'SELECT * FROM order WHERE payer = ? and (status  = ? or status = ?) ', [username, 'pending', 'uploaded'], function ( err, results, fields ){
+														db.query( 'SELECT * FROM orders WHERE payer = ? and (status  = ? or status = ?) ', [username, 'pending', 'uploaded'], function ( err, results, fields ){
 															if( err ) throw err;
 															if ( results.length === 0 ){
 																// check for earnings
@@ -750,7 +753,7 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 											var feederearn = 0;
 											var feederbonus  = 0;
 											var total = 0;
-											res.render('dashboard', {admin: admin, title: 'DASHBOARD', feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noenter: message, news: news, feederbonus: feederbonus, message: message});
+											res.render('dashboard', {admin: admin, title: 'DASHBOARD', feederearn: feederearn, total: total, feedentrance: feedentrance, totalentrance: totalentrance, noenter: message, feederbonus: feederbonus, message: message});
 										}else{
 											//check the number of times he has entered the feeder stage
 											db.query( 'SELECT COUNT(user) AS number FROM feeder_tree WHERE user = ?', [username], function ( err, results, fields ){
@@ -1125,6 +1128,32 @@ router.get('/allusers', authentificationMiddleware(), function  (req, res, next)
   });
 });*/
 
+
+//get register with referral link 
+/*
+router.get('/:username', function(req, res, next) {
+  const db = require('../db.js');
+  var username = req.params.username;
+    //get the sponsor name on the registration page
+    db.query('SELECT username FROM user WHERE username = ?', [username],
+    function(err, results, fields){
+      if (err) throw err;
+      if (results.length === 0){
+      		console.log('not a valid sponsor name');
+       	res.redirect('/');
+       // req.flash( 'error', error.msg);
+       // res.render( '/register')
+      }else{
+        var sponsor = results[0].username;
+        console.log(sponsor)
+        if (sponsor){
+          console.log(JSON.stringify(sponsor));
+          res.render('index', { title: 'SWIFT REVOLVER', sponsor: sponsor });
+        }     
+      }
+    });  
+});*/
+
 //get register with referral link
 router.get('/register/:username', function(req, res, next) {
   const db = require('../db.js');
@@ -1232,6 +1261,42 @@ router.get('/logout', function(req, res, next) {
   res.redirect('/');
 });
 
+router.post( '/password', function ( req, res, next ){
+	var currentUser = req.session.passport.user.user_id;
+	  req.checkBody('password1', 'Password must match').equals(req.body.password2);
+  req.checkBody('password1', 'Password must be up to 8 characters').len(8);
+    var errors = req.validationErrors();
+
+  if (errors) { 
+    console.log(JSON.stringify(errors));
+    res.render('profile', { title: 'PASSWORD UPDATE FAILED', errors: errors});
+  }
+  else {
+    var password = req.body.password;
+    var pass1 = req.body.password1;
+    var pass2 = req.body.password2;
+    //check if password is correct
+    db.query( 'SELECT password FROM user WHERE user_id = ?', [currentUser], function( err, results, fields ){
+    	if( err) throw err;
+    	var hash  = results[0].password;
+    bcrypt.compare(password, hash, function(err, response){
+        if(response !== true){
+        var error = "Password is not correct";
+          res.render('profile', { title: 'Password Update failed', error: error});
+        }else{
+        	//hash and  save
+        	bcrypt.hash(pass1, saltRounds, null, function(err, hash){
+							db.query( 'UPDATE user SET password = ? WHERE user_id = ?', [  hash, currentUser], function(err, result, fields){
+								if (err) throw err;
+								var success = 'Password update successful';
+								res.render( 'profile', {success: success, title: 'Password Updated'});
+								});
+							});
+        } 
+        });
+       });
+   }
+});
 
 router.post('/sendmail',  function (req, res, next){
 	var mail = req.body.mail;
@@ -1273,22 +1338,28 @@ router.post('/addnews', function (req, res, next){
 router.post('/searchorder', function (req, res, next){
 	var id = req.body.orderId;
 	//get it first
-	db.query('SELECT * FROM order WHERE id = ?', [id], function(err, results, fields){
+	db.query('SELECT * FROM orders WHERE id = ?', [id], function(err, results, fields){
 		if( err ) throw err;
+		if( results.length === 0 ){
+			var error = 'No such order id exist. please check again.';
+			res.render( 'status', {error:error} );
+		}else{
 		var order = {
 			name: results[0].fullname,
 			payer: results[0].payer,
 			receiver: results[0].receiver,
 			phone: results[0].phone,
 			code: results[0].code,
-			user: results[0].user;
+			//user: results[0].user,
 			bank: results[0].bank,
 			accountName: results[0].accountName,
 			accountNumber: results[0].accountNumber, 
 			date: results[0].date
 		}
 		//interprete it to the success variable
-		var success = 'Payer: ' + order.payer + <br> + 'Receiver: ' + order.receiver + <br> + 'Full Name: ' + order.name <br>  
+		var success  = 'Account Name: ' + order.accountName + 'Phone Number: ' + order.code + order.phone + 'Account Number: ' + order.account_number + 'Date: ' + order.date + 'Receiver: ' + order.receiver + 'Payer: ' + order.payer + 'Full name: ' + orders.fullname;
+		res.render( 'status', {success: success} );
+		}
 	});
 });
 //delete admin
@@ -1831,15 +1902,31 @@ router.post('/register', function (req, res, next) {
 router.post('/newsc', function (req, res, next){
 	var currentUser = req.session.passport.user.user_id;
 	//get the news.
-	var news = req.body.news;
+	//var news = req.body.news;
+	db.query( 'SELECT subject FROM news', function ( err, results, fields ){
+		if( err ) throw err;
+		var last = results.slice( -1 )[0];
+		var news  = last.subject;
 	//enter into the info database.
 	db.query('INSERT INTO info (user, subject) VALUES (?, ?)', [currentUser, news], function(err, results, fields){
 		if (err) throw err;
 		res.redirect('dashboard');
+		});
 	});
 });
 //post join request
-router.post('/joinfeeder', function (req, res, next) {
+router.post('/feeder', function (req, res, next) {
+	var countDown= new Date("Nov  14,  2018 10:00:00").getTime(  );
+	var now = new Date().getTime(  );
+	var distance = countDown - now;
+	var days = Math.floor(distance /(1000 * 60 * 60 * 24));
+	var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  	var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  	var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+	if( distance > 0 ){
+		var error  = 'We are yet to launch... try again';
+		res.redirect( 'dashboard');
+	}else{
 	var currentUser = req.session.passport.user.user_id;
 	//get the username.
 	db.query( 'SELECT username FROM user WHERE user_id = ?', [currentUser], function( err, results, fields ){
@@ -1850,8 +1937,9 @@ router.post('/joinfeeder', function (req, res, next) {
 			if( err )throw err;
 			var sponsor = results[0].sponsor;
 			matrix.nospon(username, sponsor, res);
+			});
 		});
-	});
+	}
 });
 //get error handler for unauthorized
 router.get('/unauthorized', function(req, res){

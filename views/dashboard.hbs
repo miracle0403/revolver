@@ -16,12 +16,14 @@
   </div>
 {{/if}}
 {{#if news}}
-	<div class="alert alert-info">
+<div class="alert alert-success" data-notify="container-fluid">
     <form method ="POST" action ="/newsc">
-		<input type = "text" name = "news" readonly class = "form-control-plaintext" id = "staticemail" value = "{{news}}"> click <a href = "/news" target = "_blank"> here </a>to read more.
-		<button type="submit" id="cancel" class="btn btn-info">x</button>
-	</form>
-  </div>
+                                    <button type="submit" aria-hidden="true" class="close">×</button>
+                                    </form>
+                                
+                                    <span data-notify="message"> {{news}} click <a href = "/news" target = "_blank"> here </a>to read more.
+		</span>
+                                </div>
 {{/if}}
       <div class="container-fluid">
       <div class= "bg bg-danger">

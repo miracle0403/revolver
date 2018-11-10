@@ -54,7 +54,7 @@ setInterval(reset, 500);
 
 //get the time for the matrix removal.
 function firstremove(){
-	db.query( 'SELECT date FROM order WHERE status = ?' , ['pending'], function ( err, results, fields ){
+	db.query( 'SELECT date FROM orders WHERE status = ?' , ['pending'], function ( err, results, fields ){
 		if( err ) throw err;
 		if( results.length === 0 ){
 			//console.log( 'no date value' );

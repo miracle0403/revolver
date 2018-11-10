@@ -125,7 +125,12 @@ DELIMITER ;
 
 CREATE TABLE pin( user VARCHAR(255) UNIQUE, serial text NOT NULL, pin varchar( 255 ) NOT NULL, date DATETIME  DEFAULT CURRENT_TIMESTAMP);
 
+
+CREATE TABLE info( user INT(11) NOT NULL, subject varchar( 255 ) NOT NULL, date DATETIME  DEFAULT CURRENT_TIMESTAMP);
+
 CREATE TABLE news( id INT(11) PRIMARY KEY AUTO_INCREMENT NOT NULL, subject VARCHAR (255) NOT NULL, text TEXT NOT NULL, date DATETIME  DEFAULT CURRENT_TIMESTAMP);
+
+CREATE TABLE orders( id INT (11) AUTO_INCREMENT PRIMARY KEY NOT NULL, user VARCHAR(255), code INT(11) NOT NULL, phone VARCHAR (255) NOT NULL, fullname varchar( 255 ) NOT NULL, payer varchar (255) NOT NULL, receiver varchar (255) NOT NULL, bank varchar (255) not null, accountName varchar (255) not null, accountNumber varchar (255) not null,   status varchar (255) not null, date DATETIME  DEFAULT CURRENT_TIMESTAMP);
 
 CREATE TABLE reset( user VARCHAR( 255 ) NOT NULL, status text, code VARCHAR(255) not null, password VARCHAR(255) null, date DATETIME  DEFAULT CURRENT_TIMESTAMP);
 
